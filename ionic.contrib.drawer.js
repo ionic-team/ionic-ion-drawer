@@ -18,7 +18,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   // How far to drag before triggering
   var thresholdX = 15;
   // How far from edge before triggering
-  var edgeX = 25;
+  var edgeX = 40;
 
   var LEFT = 0;
   var RIGHT = 1;
@@ -48,7 +48,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     disableAnimation();
 
     dragging = true;
-    offsetX = lastX - el.offsetLeft;
+    offsetX = lastX - startX;
     console.log('Starting drag');
     console.log('Offset:', offsetX);
   };
@@ -110,19 +110,16 @@ angular.module('ionic.contrib.drawer', ['ionic'])
           } 
         }
       } else {
-        if(isTargetDrag) {
-          //console.log(width, lastX, offsetX);
-          newX = Math.min(0, (-width + (lastX - offsetX)));
-          console.log(newX);
-        } else {
-          newX = Math.min(0, (-width + (lastX - offsetX)));
-        }
-
+        console.log(lastX, offsetX, lastX - offsetX);
+        newX = Math.min(0, (-width + (lastX - offsetX)));
         el.style.transform = el.style.webkitTransform = 'translate3d(' + newX + 'px, 0, 0)';
 
-        e.preventDefault();
       }
     });
+
+    if(dragging) {
+      e.gesture.srcEvent.preventDefault();
+    }
   };
 
   side = $attr.side == 'left' ? LEFT : RIGHT;
