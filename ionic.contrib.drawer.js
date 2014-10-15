@@ -42,6 +42,10 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   };
 
   var doEndDrag = function(e) {
+    startX = null;
+    lastX = null;
+    offsetX = null;
+
     if(!dragging) {
       return;
     }
@@ -105,18 +109,25 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
 
   this.close = function() {
-    if(side === LEFT) {
-      el.style.transform = el.style.webkitTransform = 'translate3d(-100%, 0, 0)';
-    } else {
-      el.style.transform = el.style.webkitTransform = 'translate3d(100%, 0, 0)';
-    }
+    enableAnimation();
+    ionic.requestAnimationFrame(function() {
+      if(side === LEFT) {
+        el.style.transform = el.style.webkitTransform = 'translate3d(-100%, 0, 0)';
+      } else {
+        el.style.transform = el.style.webkitTransform = 'translate3d(100%, 0, 0)';
+      }
+    });
   };
+
   this.open = function() {
-    if(side === LEFT) {
-      el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
-    } else {
-      el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
-    }
+    enableAnimation();
+    ionic.requestAnimationFrame(function() {
+      if(side === LEFT) {
+        el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
+      } else {
+        el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
+      }
+    });
   };
 }])
 
@@ -124,14 +135,14 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   return {
     restrict: 'E',
     controller: 'drawerCtrl',
-    scope: {
-    },
     link: function($scope, $element, $attr, ctrl) {
       $element.addClass($attr.side);
-      $scope.open = function() {
+      $scope.openDrawer = function() {
+        console.log('open');
         ctrl.open();
       };
-      $scope.close = function() {
+      $scope.closeDrawer = function() {
+        console.log('close');
         ctrl.close();
       };
     }
