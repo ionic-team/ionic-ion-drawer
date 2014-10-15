@@ -23,6 +23,8 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   var LEFT = 0;
   var RIGHT = 1;
 
+  var isTargetDrag = false;
+
   var width = $element[0].clientWidth;
 
   var enableAnimation = function() {
@@ -30,6 +32,16 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   };
   var disableAnimation = function() {
     $element.removeClass('animate');
+  };
+
+  // Check if this is on target or not
+  var isTarget = function(el) {
+    while(el) {
+      if(el === $element[0]) {
+        return true;
+      }
+      el = el.parentNode;
+    }
   };
 
   var startDrag = function(e) {
@@ -41,10 +53,21 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     console.log('Offset:', offsetX);
   };
 
+  var startTargetDrag = function(e) {
+    disableAnimation();
+
+    dragging = true;
+    isTargetDrag = true;
+    offsetX = lastX - startX;
+    console.log('Starting target drag');
+    console.log('Offset:', offsetX);
+  };
+
   var doEndDrag = function(e) {
     startX = null;
     lastX = null;
     offsetX = null;
+    isTargetDrag = false;
 
     if(!dragging) {
       return;
@@ -76,22 +99,27 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
       lastX = e.gesture.touches[0].pageX;
 
-      console.log(startX, window.innerWidth - edgeX);
-
       if(!dragging) {
 
         // Dragged 15 pixels and finger is by edge
         if(Math.abs(lastX - startX) > thresholdX) {
-          console.log(side, startX, edgeX);
-          if(startX < edgeX) {
-            console.log(lastX, startX);
-
-            startDrag(e, el);
+          if(isTarget(e.target)) {
+            startTargetDrag(e);
+          } else if(startX < edgeX) {
+            startDrag(e);
           } 
         }
       } else {
-        newX = Math.min(0, (-width + (lastX - offsetX)));
+        if(isTargetDrag) {
+          //console.log(width, lastX, offsetX);
+          newX = Math.min(0, (-width + (lastX - offsetX)));
+          console.log(newX);
+        } else {
+          newX = Math.min(0, (-width + (lastX - offsetX)));
+        }
+
         el.style.transform = el.style.webkitTransform = 'translate3d(' + newX + 'px, 0, 0)';
+
         e.preventDefault();
       }
     });
