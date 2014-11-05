@@ -88,34 +88,34 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   };
 
   var doDrag = function(e) {
-    ionic.requestAnimationFrame(function() {
-      if(e.defaultPrevented) {
-        return;
+    if(e.defaultPrevented) {
+      return;
+    }
+
+    if(!lastX) {
+      startX = e.gesture.touches[0].pageX;
+    }
+
+    lastX = e.gesture.touches[0].pageX;
+
+    if(!dragging) {
+
+      // Dragged 15 pixels and finger is by edge
+      if(Math.abs(lastX - startX) > thresholdX) {
+        if(isTarget(e.target)) {
+          startTargetDrag(e);
+        } else if(startX < edgeX) {
+          startDrag(e);
+        } 
       }
-
-      if(!lastX) {
-        startX = e.gesture.touches[0].pageX;
-      }
-
-      lastX = e.gesture.touches[0].pageX;
-
-      if(!dragging) {
-
-        // Dragged 15 pixels and finger is by edge
-        if(Math.abs(lastX - startX) > thresholdX) {
-          if(isTarget(e.target)) {
-            startTargetDrag(e);
-          } else if(startX < edgeX) {
-            startDrag(e);
-          } 
-        }
-      } else {
-        console.log(lastX, offsetX, lastX - offsetX);
-        newX = Math.min(0, (-width + (lastX - offsetX)));
+    } else {
+      console.log(lastX, offsetX, lastX - offsetX);
+      newX = Math.min(0, (-width + (lastX - offsetX)));
+      ionic.requestAnimationFrame(function() {
         el.style.transform = el.style.webkitTransform = 'translate3d(' + newX + 'px, 0, 0)';
+      });
 
-      }
-    });
+    }
 
     if(dragging) {
       e.gesture.srcEvent.preventDefault();
