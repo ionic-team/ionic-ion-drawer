@@ -85,8 +85,10 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     ionic.requestAnimationFrame(function() {
       if(newX < (-width / 2)) {
         el.style.transform = el.style.webkitTransform = 'translate3d(' + -width + 'px, 0, 0)';
+        drawerState = 'close';
       } else {
         el.style.transform = el.style.webkitTransform = 'translate3d(0px, 0, 0)';
+        drawerState = 'open';
       }
     });
   };
