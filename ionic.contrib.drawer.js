@@ -7,7 +7,7 @@
  * that can be used in iOS apps to give an iOS 7 frosted-glass effect
  * to any element.
  */
-angular.module('ionic.contrib.drawer', ['ionic'])
+angular.module('rk.drawer', ['ionic'])
 
 .controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$document', function($element, $attr, $ionicGesture, $document) {
   var el = $element[0];
@@ -27,12 +27,16 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   var width = $element[0].clientWidth;
 
+  // Showing the current State of Drawer
+  var drawerState = 'close';
+
   var enableAnimation = function() {
     $element.addClass('animate');
   };
   var disableAnimation = function() {
     $element.removeClass('animate');
   };
+  
 
   // Check if this is on target or not
   var isTarget = function(el) {
@@ -154,6 +158,20 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       }
     });
   };
+
+  this.isOpen = function()
+  {
+    if(drawerState === 'close')
+      return false;
+    else if(drawerState === 'open')
+      return true;
+
+  }
+  this.setState = function(value)
+  {
+    drawerState = value;
+  }
+
 }])
 
 .directive('drawer', ['$rootScope', '$ionicGesture', function($rootScope, $ionicGesture) {
@@ -169,6 +187,20 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       $scope.closeDrawer = function() {
         console.log('close');
         ctrl.close();
+      };
+
+      $scope.openCloseDrawer = function()
+      {
+        if(ctrl.isOpen())
+        {
+          ctrl.close();
+          ctrl.setState('close');
+        }
+        else if(!ctrl.isOpen())
+        {
+          ctrl.open();
+          ctrl.setState('open');
+        }
       };
     }
   }
