@@ -7,7 +7,7 @@
  * that can be used in iOS apps to give an iOS 7 frosted-glass effect
  * to any element.
  */
-angular.module('rk.drawer', ['ionic'])
+angular.module('ionic.contrib.drawer', ['ionic'])
 
 .controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$document', function($element, $attr, $ionicGesture, $document) {
   var el = $element[0];
