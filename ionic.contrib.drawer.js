@@ -181,7 +181,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       $element.bind('click', function() {
         var drawerCtrl = $element.inheritedData('$drawerController');
         drawerCtrl.close();
-      }
+      });
     }
   }
 }]);
