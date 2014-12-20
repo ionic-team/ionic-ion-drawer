@@ -9,7 +9,8 @@
  */
 angular.module('ionic.contrib.drawer', ['ionic'])
 
-.controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$document', function($element, $attr, $ionicGesture, $document) {
+.controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$timeout', '$document', function($element, $attr, $ionicGesture, $timeout, $document) {
+
   var el = $element[0];
   var dragging = false;
   var startX, lastX, offsetX, newX;
@@ -25,7 +26,13 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   var isTargetDrag = false;
 
-  var width = $element[0].clientWidth;
+  var width = 0;
+
+  var clientWidth = document.body.clientWidth;
+
+  $timeout(function(){
+   width = $element[0].clientWidth;
+  }, 10);
 
   var enableAnimation = function() {
     $element.addClass('animate');
@@ -79,8 +86,9 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     enableAnimation();
 
     ionic.requestAnimationFrame(function() {
-      if(newX < (-width / 2)) {
-        el.style.transform = el.style.webkitTransform = 'translate3d(' + -width + 'px, 0, 0)';
+      console.log(newX, (width / 2))
+      if(newX > (width / 2)) {
+        el.style.transform = el.style.webkitTransform = 'translate3d('+width+'px, 0, 0)';
       } else {
         el.style.transform = el.style.webkitTransform = 'translate3d(0px, 0, 0)';
       }
@@ -99,22 +107,28 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     lastX = e.gesture.touches[0].pageX;
 
     if(!dragging) {
-
       // Dragged 15 pixels and finger is by edge
-      if(Math.abs(lastX - startX) > thresholdX) {
-        if(isTarget(e.target)) {
-          startTargetDrag(e);
-        } else if(startX < edgeX) {
-          startDrag(e);
-        } 
+      if(isTarget(e.target)) {
+        startTargetDrag(e);
+      } else if(Math.abs(lastX - startX) > thresholdX) {
+        if (side == RIGHT) {
+          if (startX > edgeX) {
+            startDrag(e);
+          }
+        } else {
+          if (startX < edgeX) {
+            startDrag(e);
+          }
+        }
       }
     } else {
-      console.log(lastX, offsetX, lastX - offsetX);
-      newX = Math.min(0, (-width + (lastX - offsetX)));
+      console.log(lastX - offsetX)
+      newX = Math.max(0, width- (clientWidth - (lastX - offsetX)));
+
       ionic.requestAnimationFrame(function() {
+        console.log('drag', newX)
         el.style.transform = el.style.webkitTransform = 'translate3d(' + newX + 'px, 0, 0)';
       });
-
     }
 
     if(dragging) {
@@ -123,7 +137,10 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   };
 
   side = $attr.side == 'left' ? LEFT : RIGHT;
-  console.log(side);
+
+  if (side == RIGHT) {
+    edgeX = clientWidth - edgeX
+  }
 
   $ionicGesture.on('drag', function(e) {
     doDrag(e);

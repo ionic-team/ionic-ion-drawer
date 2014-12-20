@@ -1,9 +1,10 @@
 drawer {
   display: block;
   position: fixed;
-  width: 270px;
+  width: 50%;
   height: 100%;
   z-index: 100;
+  background-color: white;
 }
 
 drawer.animate {
