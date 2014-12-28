@@ -8,7 +8,7 @@ drawer {
 }
 
 drawer.animate {
-  -webkit-transition: 0.4s all ease-in-out;
+  -webkit-transition: 200ms all ease;
   transition: 200ms all ease;
 }
 
