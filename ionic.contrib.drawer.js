@@ -27,12 +27,16 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   var width = $element[0].clientWidth;
 
+  // Showing the current State of Drawer
+  var drawerState = 'close';
+
   var enableAnimation = function() {
     $element.addClass('animate');
   };
   var disableAnimation = function() {
     $element.removeClass('animate');
   };
+  
 
   // Check if this is on target or not
   var isTarget = function(el) {
@@ -81,8 +85,10 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     ionic.requestAnimationFrame(function() {
       if(newX < (-width / 2)) {
         el.style.transform = el.style.webkitTransform = 'translate3d(' + -width + 'px, 0, 0)';
+        drawerState = 'close';
       } else {
         el.style.transform = el.style.webkitTransform = 'translate3d(0px, 0, 0)';
+        drawerState = 'open';
       }
     });
   };
@@ -154,6 +160,20 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       }
     });
   };
+
+  this.isOpen = function()
+  {
+    if(drawerState === 'close')
+      return false;
+    else if(drawerState === 'open')
+      return true;
+
+  }
+  this.setState = function(value)
+  {
+    drawerState = value;
+  }
+
 }])
 
 .directive('drawer', ['$rootScope', '$ionicGesture', function($rootScope, $ionicGesture) {
@@ -169,6 +189,20 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       $scope.closeDrawer = function() {
         console.log('close');
         ctrl.close();
+      };
+
+      $scope.openCloseDrawer = function()
+      {
+        if(ctrl.isOpen())
+        {
+          ctrl.close();
+          ctrl.setState('close');
+        }
+        else if(!ctrl.isOpen())
+        {
+          ctrl.open();
+          ctrl.setState('open');
+        }
       };
     }
   }
