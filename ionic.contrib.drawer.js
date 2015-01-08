@@ -174,4 +174,16 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   }
 }]);
 
+.directive('drawerClose', ['$rootScope', function($rootScope) {
+  return {
+    restrict: 'A',
+    link: function($scope, $element) {
+      $element.bind('click', function() {
+        var drawerCtrl = $element.inheritedData('$drawerController');
+        drawerCtrl.close();
+      });
+    }
+  }
+}]);
+
 })();

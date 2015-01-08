@@ -4,6 +4,7 @@ drawer {
   width: 270px;
   height: 100%;
   z-index: 100;
+  background: #ffffff;
 }
 
 drawer.animate {
