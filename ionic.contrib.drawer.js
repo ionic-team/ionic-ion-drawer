@@ -137,6 +137,9 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     doEndDrag(e);
   }, $document);
 
+  this.setState = function(value) {
+    drawerState = value;
+  };
 
   this.close = function() {
     enableAnimation();
@@ -147,7 +150,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         el.style.transform = el.style.webkitTransform = 'translate3d(100%, 0, 0)';
       }
     });
-    ctrl.setState('close');
+    drawerState = 'close';
   };
 
   this.open = function() {
@@ -159,7 +162,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
       }
     });
-    ctrl.setState('open');
+    drawerState = 'open';
   };
 
   this.isOpen = function() {
@@ -168,10 +171,6 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     } else {
       return true;
     }
-  };
-
-  this.setState = function(value) {
-    drawerState = value;
   };
 }])
 
@@ -195,6 +194,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         } else {
           ctrl.open();
         }
+        console.log(ctrl.isOpen());
       };
     }
   }
