@@ -27,6 +27,9 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   var width = $element[0].clientWidth;
 
+  // Current State of Drawer
+  var drawerState = 'close';
+
   var enableAnimation = function() {
     $element.addClass('animate');
   };
@@ -81,8 +84,10 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     ionic.requestAnimationFrame(function() {
       if(newX < (-width / 2)) {
         el.style.transform = el.style.webkitTransform = 'translate3d(' + -width + 'px, 0, 0)';
+        drawerState = 'close';
       } else {
         el.style.transform = el.style.webkitTransform = 'translate3d(0px, 0, 0)';
+        drawerState = 'open';
       }
     });
   };
@@ -132,6 +137,9 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     doEndDrag(e);
   }, $document);
 
+  this.setState = function(value) {
+    drawerState = value;
+  };
 
   this.close = function() {
     enableAnimation();
@@ -142,6 +150,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         el.style.transform = el.style.webkitTransform = 'translate3d(100%, 0, 0)';
       }
     });
+    drawerState = 'close';
   };
 
   this.open = function() {
@@ -153,6 +162,15 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
       }
     });
+    drawerState = 'open';
+  };
+
+  this.isOpen = function() {
+    if(drawerState === 'close') {
+      return false;
+    } else {
+      return true;
+    }
   };
 }])
 
@@ -170,9 +188,17 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         console.log('close');
         ctrl.close();
       };
+      $scope.toggleDrawer = function() {
+        if(ctrl.isOpen()) {
+          ctrl.close();
+        } else {
+          ctrl.open();
+        }
+        console.log(ctrl.isOpen());
+      };
     }
   }
-}]);
+}])
 
 .directive('drawerClose', ['$rootScope', function($rootScope) {
   return {
