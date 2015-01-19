@@ -147,6 +147,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         el.style.transform = el.style.webkitTransform = 'translate3d(100%, 0, 0)';
       }
     });
+    ctrl.setState('close');
   };
 
   this.open = function() {
@@ -158,6 +159,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
       }
     });
+    ctrl.setState('open');
   };
 
   this.isOpen = function() {
@@ -182,20 +184,16 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       $scope.openDrawer = function() {
         console.log('open');
         ctrl.open();
-        ctrl.setState('open');
       };
       $scope.closeDrawer = function() {
         console.log('close');
         ctrl.close();
-        ctrl.setState('close');
       };
       $scope.toggleDrawer = function() {
         if(ctrl.isOpen()) {
           ctrl.close();
-          ctrl.setState('close');
         } else {
           ctrl.open();
-          ctrl.setState('open');
         }
       };
     }
