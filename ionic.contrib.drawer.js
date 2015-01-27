@@ -9,11 +9,14 @@
  */
 angular.module('ionic.contrib.drawer', ['ionic'])
 
-.controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$document', function($element, $attr, $ionicGesture, $document) {
+.controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$document', '$ionicPlatform', function($element, $attr, $ionicGesture, $document, $ionicPlatform) {
   var el = $element[0];
   var dragging = false;
   var startX, lastX, offsetX, newX;
   var side;
+
+  // Handle back button
+  var unregisterBackAction;
 
   // How far to drag before triggering
   var thresholdX = 15;
@@ -106,7 +109,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
           startTargetDrag(e);
         } else if(startX < edgeX) {
           startDrag(e);
-        } 
+        }
       }
     } else {
       console.log(lastX, offsetX, lastX - offsetX);
@@ -132,6 +135,10 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     doEndDrag(e);
   }, $document);
 
+  var hardwareBackCallback = function() {
+    this.close();
+  }.bind(this);
+
 
   this.close = function() {
     enableAnimation();
@@ -142,6 +149,9 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         el.style.transform = el.style.webkitTransform = 'translate3d(100%, 0, 0)';
       }
     });
+    if (unregisterBackAction) {
+        unregisterBackAction();
+    }
   };
 
   this.open = function() {
@@ -153,6 +163,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
       }
     });
+    unregisterBackAction = $ionicPlatform.registerBackButtonAction(hardwareBackCallback, 100);
   };
 }])
 
