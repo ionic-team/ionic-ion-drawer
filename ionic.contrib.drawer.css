@@ -1,3 +1,18 @@
+.drawer-open ion-view.pane{
+  opacity:0.4;
+}
+
+.drawer-open ion-pane.pane{
+  background-color: rgb(0,0,0);
+}
+.drawer-open view{
+  background-color: rgb(0,0,0);
+}
+
+.drawer-open .drawer-content .pane, .drawer-open .drawer-content .scroll-content {
+  pointer-events: none;
+}
+
 drawer {
   display: block;
   position: fixed;
@@ -8,8 +23,8 @@ drawer {
 }
 
 drawer.animate {
-  -webkit-transition: 200ms all ease;
-  transition: 200ms all ease;
+  -webkit-transition: 300ms all ease;
+  transition: 300ms all ease;
 }
 
 drawer.left {
