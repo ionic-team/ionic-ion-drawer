@@ -190,7 +190,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
       var opened = false;
 
-      $scope.toggleDrawer = function() {
+      $rootScope.toggleDrawer = function() {
         if (opened) {
           opened = false;
           $scope.closeDrawer();
