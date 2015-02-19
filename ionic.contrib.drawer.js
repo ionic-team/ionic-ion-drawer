@@ -144,6 +144,16 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       console.log(lastX, offsetX, lastX - offsetX);
       newX = Math.min(0, (-width + (lastX - offsetX)));
       
+      if (drawerState === STATE_OPEN) {
+        if (lastX > startX) {
+          return;
+        }
+      } else {
+        if (lastX < startX) {
+          return;
+        }
+      }
+      
       var opacity = 1 + (this.newX / this.width);
       
       if (opacity < 0) {
