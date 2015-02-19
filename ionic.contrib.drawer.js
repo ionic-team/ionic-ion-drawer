@@ -65,7 +65,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   // Check if this is on target or not
   var isTarget = function(targetEl) {
     while (targetEl) {
-      if (targetEl === el]) {
+      if (targetEl === el) {
         return true;
       }
       targetEl = targetEl.parentNode;
