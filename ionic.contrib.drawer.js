@@ -12,7 +12,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 .controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$document', '$ionicPlatform', function($element, $attr, $ionicGesture, $document, $ionicPlatform) {
   var el = $element[0];
   var dragging = false;
-  var startX, lastX, offsetX, newX;
+  var startX, lastX, offsetX, newX, startY, lastY, startDir;
 
   // How far to drag before triggering
   var thresholdX = 15;
@@ -92,9 +92,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   };
 
   var doEndDrag = function(e) {
-    startX = null;
-    lastX = null;
-    offsetX = null;
+    startX = lastX = offsetX = startY = lastY = startDir = null;
     isTargetDrag = false;
 
     if (!dragging) {
@@ -127,12 +125,38 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     if (e.defaultPrevented) {
       return;
     }
+    
+    var finger = e.gesture.touches[0];
+    var dir = e.gesture.direction;
 
     if (!lastX) {
-      startX = e.gesture.touches[0].pageX;
+      startX = finger.pageX;
     }
 
-    lastX = e.gesture.touches[0].pageX;
+    if (!lastY) {
+      startY = finger.pageY;
+    }
+
+    if (!startDir) {
+      startDir = dir;
+    }
+
+    lastX = finger.pageX;
+    lastY = finger.pageY;
+    
+    if (Math.abs(lastY - startY) > thresholdX && (startDir === 'down' || startDir === 'up')) {
+      return;
+    }
+    
+    if (drawerState === STATE_OPEN) {
+      if (dir === SIDE_RIGHT) {
+        return;
+      }
+    } else {
+      if (dir === SIDE_LEFT) {
+        return;
+      }
+    }
 
     if (!dragging) {
       // Dragged 15 pixels and finger is by edge
@@ -146,16 +170,6 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     } else {
       console.log(lastX, offsetX, lastX - offsetX);
       newX = Math.min(0, (-width + (lastX - offsetX)));
-      
-      if (drawerState === STATE_OPEN) {
-        if (lastX > startX) {
-          return;
-        }
-      } else {
-        if (lastX < startX) {
-          return;
-        }
-      }
       
       var opacity = 1 + (this.newX / this.width);
       
