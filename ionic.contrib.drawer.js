@@ -20,12 +20,17 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   // How far from edge before triggering
   var edgeX = 40;
 
-  var LEFT = 0;
-  var RIGHT = 1;
+  var SIDE_LEFT = 'left';
+  var SIDE_RIGHT = 'right';
+  var STATE_CLOSE = 'close';
+  var STATE_OPEN = 'open';
 
   var isTargetDrag = false;
 
   var width = $element[0].clientWidth;
+  
+  // Current State of Drawer
+  var drawerState = STATE_CLOSE;
 
   var enableAnimation = function() {
     $element.addClass('animate');
@@ -35,12 +40,12 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   };
 
   // Check if this is on target or not
-  var isTarget = function(el) {
-    while(el) {
-      if(el === $element[0]) {
+  var isTarget = function(targetEl) {
+    while(targetEl) {
+      if(targetEl === el]) {
         return true;
       }
-      el = el.parentNode;
+      targetEl = targetEl.parentNode;
     }
   };
 
@@ -79,11 +84,14 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     enableAnimation();
 
     ionic.requestAnimationFrame(function() {
+      var translateX = 0;
       if(newX < (-width / 2)) {
-        el.style.transform = el.style.webkitTransform = 'translate3d(' + -width + 'px, 0, 0)';
+        translateX = -width;
+        drawerState = STATE_CLOSE;
       } else {
-        el.style.transform = el.style.webkitTransform = 'translate3d(0px, 0, 0)';
+        drawerState = STATE_OPEN;
       }
+      el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + 'px, 0, 0)';
     });
   };
 
@@ -112,9 +120,8 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       console.log(lastX, offsetX, lastX - offsetX);
       newX = Math.min(0, (-width + (lastX - offsetX)));
       ionic.requestAnimationFrame(function() {
-        el.style.transform = el.style.webkitTransform = 'translate3d(' + newX + 'px, 0, 0)';
-      });
-
+        el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + newX + 'px, 0, 0)';
+      }); 
     }
 
     if(dragging) {
@@ -122,37 +129,30 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     }
   };
 
-  side = $attr.side == 'left' ? LEFT : RIGHT;
+  side = $attr.side === SIDE_LEFT ? SIDE_LEFT : SIDE_RIGHT;
   console.log(side);
 
-  $ionicGesture.on('drag', function(e) {
-    doDrag(e);
-  }, $document);
-  $ionicGesture.on('dragend', function(e) {
-    doEndDrag(e);
-  }, $document);
-
-
+  $ionicGesture.on('drag', doDrag, $document);
+  $ionicGesture.on('dragend', doEndDrag, $document);
+  
   this.close = function() {
+    var translateX = side === SIDE_LEFT ? '-100' : '100';
+    
     enableAnimation();
     ionic.requestAnimationFrame(function() {
-      if(side === LEFT) {
-        el.style.transform = el.style.webkitTransform = 'translate3d(-100%, 0, 0)';
-      } else {
-        el.style.transform = el.style.webkitTransform = 'translate3d(100%, 0, 0)';
-      }
+      el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + '%, 0, 0)';
     });
   };
 
   this.open = function() {
     enableAnimation();
     ionic.requestAnimationFrame(function() {
-      if(side === LEFT) {
-        el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
-      } else {
-        el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
-      }
+      el.style[ionic.CSS.TRANSFORM] = 'translate3d(0%, 0, 0)';
     });
+  };
+  
+  this.isOpen = function() {
+    return (drawerState === STATE_OPEN);
   };
 }])
 
