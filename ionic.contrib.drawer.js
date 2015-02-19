@@ -162,13 +162,23 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     controller: 'drawerCtrl',
     link: function($scope, $element, $attr, ctrl) {
       $element.addClass($attr.side);
+      
       $scope.openDrawer = function() {
         console.log('open');
         ctrl.open();
       };
+      
       $scope.closeDrawer = function() {
         console.log('close');
         ctrl.close();
+      };
+      
+      $scope.toggleDrawer = function() {
+        if (ctrl.isOpen()) {
+          ctrl.close();
+        } else {
+          ctrl.open();
+        }
       };
     }
   }
