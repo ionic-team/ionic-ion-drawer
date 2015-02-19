@@ -139,6 +139,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     var translateX = side === SIDE_LEFT ? '-100' : '100';
     
     enableAnimation();
+    drawerState = STATE_CLOSE;
     ionic.requestAnimationFrame(function() {
       el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + '%, 0, 0)';
     });
@@ -146,6 +147,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   this.open = function() {
     enableAnimation();
+    drawerState = STATE_OPEN;
     ionic.requestAnimationFrame(function() {
       el.style[ionic.CSS.TRANSFORM] = 'translate3d(0%, 0, 0)';
     });
