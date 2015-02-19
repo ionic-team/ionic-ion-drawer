@@ -9,7 +9,7 @@
  */
 angular.module('ionic.contrib.drawer', ['ionic'])
 
-.controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$document', function($element, $attr, $ionicGesture, $document) {
+.controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$document', '$ionicPlatform', function($element, $attr, $ionicGesture, $document, $ionicPlatform) {
   var el = $element[0];
   var dragging = false;
   var startX, lastX, offsetX, newX;
@@ -28,6 +28,9 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   var side = $attr.side === SIDE_LEFT ? SIDE_LEFT : SIDE_RIGHT;
   var width = el.clientWidth;
+  
+  // Handle back button
+  var unregisterBackAction;
   
   // Current State of Drawer
   var drawerState = STATE_CLOSE;
@@ -170,6 +173,10 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       e.gesture.srcEvent.preventDefault();
     }
   };
+  
+  var hardwareBackCallback = function() {
+    this.close();
+  }.bind(this);
 
   $ionicGesture.on('drag', doDrag, $document);
   $ionicGesture.on('dragend', doEndDrag, $document);
@@ -183,6 +190,10 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       overlayEl.style.opacity = 0;
       el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + (side === SIDE_LEFT ? '-' : '') + '100%, 0, 0)';
     });
+    
+    if (unregisterBackAction) {
+      unregisterBackAction();
+    }
   };
 
   this.open = function() {
@@ -193,6 +204,8 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       overlayEl.style.opacity = 1;
       el.style[ionic.CSS.TRANSFORM] = 'translate3d(0, 0, 0)';
     });
+    
+    unregisterBackAction = $ionicPlatform.registerBackButtonAction(hardwareBackCallback, 100);
   };
   
   this.isOpen = function() {
