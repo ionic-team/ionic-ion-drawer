@@ -12,7 +12,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 .controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$document', '$ionicPlatform', function($element, $attr, $ionicGesture, $document, $ionicPlatform) {
   var el = $element[0];
   var dragging = false;
-  var startX, lastX, offsetX, newX, startY, lastY, startDir;
+  var startX, lastX, offsetX, newX, startDir;
 
   // How far to drag before triggering
   var thresholdX = 15;
@@ -26,6 +26,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   var isTargetDrag = false;
 
+  var debug = $attr.debug || false;
   var side = $attr.side === SIDE_LEFT ? SIDE_LEFT : SIDE_RIGHT;
   var width = el.clientWidth;
   
@@ -41,6 +42,13 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   var overlayState = STATE_CLOSE;
   
   $element.parent().prepend(this.overlayElement);
+
+  var log = function() {
+    if (debug) {
+      var args = Array.prototype.slice.call(arguments, 0);
+      console.log.apply(console, args);
+    }
+  };
   
   var toggleOverlay = function(state) {
     if (overlayState !== state) {
@@ -77,8 +85,8 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
     dragging = true;
     offsetX = lastX - startX;
-    console.log('Starting drag');
-    console.log('Offset:', offsetX);
+    log('Starting drag');
+    log('Offset:', offsetX);
   };
 
   var startTargetDrag = function(e) {
@@ -87,12 +95,12 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     dragging = true;
     isTargetDrag = true;
     offsetX = lastX - startX;
-    console.log('Starting target drag');
-    console.log('Offset:', offsetX);
+    log('Starting target drag');
+    log('Offset:', offsetX);
   };
 
   var doEndDrag = function(e) {
-    startX = lastX = offsetX = startY = lastY = startDir = null;
+    startX = lastX = offsetX = startDir = null;
     isTargetDrag = false;
 
     if (!dragging) {
@@ -101,7 +109,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
     dragging = false;
 
-    console.log('End drag');
+    log('End drag');
     enableAnimation();
 
     ionic.requestAnimationFrame(function() {
@@ -133,34 +141,33 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       startX = finger.pageX;
     }
 
-    if (!lastY) {
-      startY = finger.pageY;
-    }
-
     if (!startDir) {
       startDir = dir;
     }
 
     lastX = finger.pageX;
-    lastY = finger.pageY;
+
+    log(dir);
     
-    if (Math.abs(lastY - startY) > thresholdX && (startDir === 'down' || startDir === 'up')) {
+    if (startDir === 'down' || startDir === 'up') {
       return;
     }
-    
-    if (drawerState === STATE_OPEN) {
-      if (dir === SIDE_RIGHT) {
-        return;
-      }
-    } else {
-      if (dir === SIDE_LEFT) {
-        return;
-      }
-    }
+
+    e.gesture.srcEvent.stopImmediatePropagation();
 
     if (!dragging) {
       // Dragged 15 pixels and finger is by edge
       if (Math.abs(lastX - startX) > thresholdX) {
+        if (drawerState === STATE_OPEN) {
+          if (dir === SIDE_RIGHT) {
+            return;
+          }
+        } else {
+          if (dir === SIDE_LEFT) {
+            return;
+          }
+        }
+
         if (isTarget(e.target)) {
           startTargetDrag(e);
         } else if(startX < edgeX) {
@@ -168,7 +175,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         } 
       }
     } else {
-      console.log(lastX, offsetX, lastX - offsetX);
+      log(lastX, offsetX, lastX - offsetX);
       newX = Math.min(0, (-width + (lastX - offsetX)));
       
       var opacity = 1 + (this.newX / this.width);
@@ -235,12 +242,10 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       $element.addClass($attr.side);
       
       $scope.openDrawer = function() {
-        console.log('open');
         ctrl.open();
       };
       
       $scope.closeDrawer = function() {
-        console.log('close');
         ctrl.close();
       };
       
