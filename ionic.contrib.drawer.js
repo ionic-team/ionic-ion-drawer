@@ -153,8 +153,6 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       return;
     }
 
-    e.gesture.srcEvent.stopImmediatePropagation();
-
     if (!dragging) {
       // Dragged 15 pixels and finger is by edge
       if (Math.abs(lastX - startX) > thresholdX) {
@@ -175,6 +173,8 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         } 
       }
     } else {
+      e.gesture.srcEvent.stopImmediatePropagation();
+
       log(lastX, offsetX, lastX - offsetX);
       newX = Math.min(0, (-width + (lastX - offsetX)));
       
