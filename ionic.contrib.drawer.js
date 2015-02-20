@@ -160,7 +160,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     if (!dragging) {
       // Dragged 15 pixels and finger is by edge
       if (Math.abs(lastX - startX) > thresholdX) {
-        if (drawerState === STATE_OPEN) {
+        if (isOpen()) {
           if (dir === SIDE_RIGHT) {
             return;
           }
@@ -180,7 +180,22 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       e.gesture.srcEvent.stopImmediatePropagation();
 
       log(lastX, offsetX, lastX - offsetX);
+
+      if (e.gesture.deltaTime < 200) {
+        if (isOpen()) {
+          if (dir === SIDE_LEFT) {
+            return newX = -width;
+          }
+        } else {
+          if (dir === SIDE_RIGHT) {
+            return newX = 0;
+          }
+        }
+      }
+
       newX = Math.min(0, (-width + (lastX - offsetX)));
+
+      log('newX:', newX, 'With:', (-width / 2));
       
       var opacity = 1 + (this.newX / this.width);
       
