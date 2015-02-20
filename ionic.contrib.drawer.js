@@ -40,12 +40,12 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   var overlayEl = $overlay[0];
   var overlayState = STATE_CLOSE;
   
-  $element.parent().prepend(this.overlayElement);
+  $element.parent().prepend(overlayEl);
   
   var toggleOverlay = function(state) {
     if (overlayState !== state) {
       ionic.requestAnimationFrame(function() {
-        var translateX = state === STATE_CLOSE ? '0' : '-100';
+        var translateX = state === STATE_CLOSE ? '-100' : '0';
         overlayEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + '%, 0, 0)';
       });
       overlayState = state;
@@ -78,12 +78,15 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   var startDrag = function(e) {
     disableAnimation();
+    toggleOverlay(STATE_OPEN);
+
     dragging = true;
     offsetX = lastX - startX;
   };
 
   var startTargetDrag = function(e) {
     disableAnimation();
+    toggleOverlay(STATE_OPEN);
 
     dragging = true;
     isTargetDrag = true;
@@ -112,6 +115,8 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       opacity = 1;
       drawerState = STATE_OPEN;
     }
+
+    toggleOverlay(drawerState);
 
     ionic.requestAnimationFrame(function() {
       overlayEl.style.opacity = opacity;
@@ -177,7 +182,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
       newX = Math.min(0, (-width + (lastX - offsetX)));
 
-      var opacity = 1 + (this.newX / this.width);
+      var opacity = 1 + (newX / width);
       
       if (opacity < 0) {
         opacity = 0;
@@ -197,15 +202,12 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   var hardwareBackCallback = function() {
     this.close();
   }.bind(this);
-
-  $ionicGesture.on('drag', doDrag, $document);
-  $ionicGesture.on('dragend', doEndDrag, $document);
-  $overlay.on('click', this.close);
   
   this.close = function() {
     drawerState = STATE_CLOSE;
     enableAnimation();
     toggleOverlay(STATE_CLOSE);
+
     ionic.requestAnimationFrame(function() {
       overlayEl.style.opacity = 0;
       el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + (side === SIDE_LEFT ? '-' : '') + '100%, 0, 0)';
@@ -229,6 +231,10 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   };
   
   this.isOpen = isOpen;
+
+  $ionicGesture.on('drag', doDrag, $document);
+  $ionicGesture.on('dragend', doEndDrag, $document);
+  $overlay.on('click', this.close);
 }])
 
 .directive('drawer', ['$rootScope', '$ionicGesture', function($rootScope, $ionicGesture) {
