@@ -80,6 +80,10 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     }
   };
 
+  var isOpen = function() {
+    return drawerState === STATE_OPEN;
+  };
+
   var startDrag = function(e) {
     disableAnimation();
 
@@ -229,9 +233,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     unregisterBackAction = $ionicPlatform.registerBackButtonAction(hardwareBackCallback, 100);
   };
   
-  this.isOpen = function() {
-    return (drawerState === STATE_OPEN);
-  };
+  this.isOpen = isOpen;
 }])
 
 .directive('drawer', ['$rootScope', '$ionicGesture', function($rootScope, $ionicGesture) {
