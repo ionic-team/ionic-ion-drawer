@@ -26,7 +26,6 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   var isTargetDrag = false;
 
-  var debug = $attr.debug || false;
   var side = $attr.side === SIDE_LEFT ? SIDE_LEFT : SIDE_RIGHT;
   var width = el.clientWidth;
   
@@ -42,13 +41,6 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   var overlayState = STATE_CLOSE;
   
   $element.parent().prepend(this.overlayElement);
-
-  var log = function() {
-    if (debug) {
-      var args = Array.prototype.slice.call(arguments, 0);
-      console.log.apply(console, args);
-    }
-  };
   
   var toggleOverlay = function(state) {
     if (overlayState !== state) {
@@ -86,11 +78,8 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   var startDrag = function(e) {
     disableAnimation();
-
     dragging = true;
     offsetX = lastX - startX;
-    log('Starting drag');
-    log('Offset:', offsetX);
   };
 
   var startTargetDrag = function(e) {
@@ -99,8 +88,6 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     dragging = true;
     isTargetDrag = true;
     offsetX = lastX - startX;
-    log('Starting target drag');
-    log('Offset:', offsetX);
   };
 
   var doEndDrag = function(e) {
@@ -113,21 +100,20 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
     dragging = false;
 
-    log('End drag');
     enableAnimation();
 
+    var translateX = 0;
+    var opacity = 0;
+    
+    if (newX < (-width / 2)) {
+      translateX = -width;
+      drawerState = STATE_CLOSE;
+    } else {
+      opacity = 1;
+      drawerState = STATE_OPEN;
+    }
+
     ionic.requestAnimationFrame(function() {
-      var translateX = 0;
-      var opacity = 0;
-      
-      if (newX < (-width / 2)) {
-        translateX = -width;
-        drawerState = STATE_CLOSE;
-      } else {
-        opacity = 1;
-        drawerState = STATE_OPEN;
-      }
-      
       overlayEl.style.opacity = opacity;
       el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + 'px, 0, 0)';
     });
@@ -150,8 +136,6 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     }
 
     lastX = finger.pageX;
-
-    log(dir);
     
     if (startDir === 'down' || startDir === 'up') {
       return;
@@ -179,8 +163,6 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     } else {
       e.gesture.srcEvent.stopImmediatePropagation();
 
-      log(lastX, offsetX, lastX - offsetX);
-
       if (e.gesture.deltaTime < 200) {
         if (isOpen()) {
           if (dir === SIDE_LEFT) {
@@ -195,8 +177,6 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
       newX = Math.min(0, (-width + (lastX - offsetX)));
 
-      log('newX:', newX, 'With:', (-width / 2));
-      
       var opacity = 1 + (this.newX / this.width);
       
       if (opacity < 0) {
