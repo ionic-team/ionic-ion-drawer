@@ -9,7 +9,9 @@
  */
 angular.module('ionic.contrib.drawer', ['ionic'])
 
-.controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$timeout', '$document', function($element, $attr, $ionicGesture, $timeout, $document) {
+.controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$ionicScrollDelegate', '$timeout', '$document', function($element, $attr, $ionicGesture, $ionicScrollDelegate, $timeout, $document) {
+
+  var self = this;
 
   var el = $element[0];
   var dragging = false;
@@ -40,6 +42,8 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   var disableAnimation = function() {
     $element.removeClass('animate');
   };
+
+  self.opened = false;
 
   // Check if this is on target or not
   var isTarget = function(el) {
@@ -87,13 +91,10 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     enableAnimation();
 
     ionic.requestAnimationFrame(function() {
-      console.log(newX, (width / 2))
-      if(newX > (width / 2)) {
-        el.style.transform = el.style.webkitTransform = 'translate3d('+width+'px, 0, 0)';
-        $document[0].body.classList.remove('drawer-open');
+      if(newX > (width / 100 * 20)) {
+        self.close()
       } else {
-        el.style.transform = el.style.webkitTransform = 'translate3d(0px, 0, 0)';
-        $document[0].body.classList.add('drawer-open');
+        self.open()
       }
     });
   };
@@ -125,11 +126,9 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         }
       }
     } else {
-      console.log(lastX - offsetX)
       newX = Math.max(0, width- (clientWidth - (lastX - offsetX)));
 
       ionic.requestAnimationFrame(function() {
-        console.log('drag', newX)
         el.style.transform = el.style.webkitTransform = 'translate3d(' + newX + 'px, 0, 0)';
       });
     }
@@ -144,16 +143,19 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   if (side == RIGHT) {
     edgeX = clientWidth - edgeX
   }
-
   $ionicGesture.on('drag', function(e) {
+    $ionicScrollDelegate.freezeAllScrolls(true);
     doDrag(e);
   }, $document);
   $ionicGesture.on('dragend', function(e) {
+    $ionicScrollDelegate.freezeAllScrolls(false);
     doEndDrag(e);
   }, $document);
 
 
   this.close = function() {
+    self.opened = false;
+
     enableAnimation();
     ionic.requestAnimationFrame(function() {
       if(side === LEFT) {
@@ -167,6 +169,8 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   };
 
   this.open = function() {
+    self.opened = true;
+
     $document[0].body.classList.add('drawer-open');
     
     enableAnimation();
@@ -188,14 +192,12 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     link: function($scope, $element, $attr, ctrl) {
       $element.addClass($attr.side);
 
-      var opened = false;
+      ctrl.opened = false;
 
-      $rootScope.toggleDrawer = function() {
-        if (opened) {
-          opened = false;
+      $scope.toggleDrawer = function() {
+        if (ctrl.opened) {
           $scope.closeDrawer();
         } else {
-          opened = true;
           $scope.openDrawer();
         }
       };
