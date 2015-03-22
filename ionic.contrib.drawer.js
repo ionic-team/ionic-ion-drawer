@@ -82,7 +82,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
     enableAnimation();
 
-    var condition = (newX < (-width / 2))
+    var condition = (newX < (- width / 100 * 20))
 
     if (side == RIGHT) {
       condition = (newX > (width / 100 * 20))
