@@ -3,9 +3,7 @@
 'use strict';
 
 /**
- * The ionic-contrib-frosted-glass is a fun frosted-glass effect
- * that can be used in iOS apps to give an iOS 7 frosted-glass effect
- * to any element.
+ * The ionic-contrib-drawer is fly-out panel that unlike sidemenu appears over the top of content
  */
 angular.module('ionic.contrib.drawer', ['ionic'])
 
@@ -28,13 +26,13 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   var isTargetDrag = false;
 
-  var width = 0;
+  var width = $element[0].clientWidth;
 
-  var clientWidth = document.body.clientWidth;
+  var clientWidth = window.innerWidth;
 
-  $timeout(function(){
-   width = $element[0].clientWidth;
-  }, 10);
+  self.init = function() {
+    width = $element[0].clientWidth;
+  }
 
   var enableAnimation = function() {
     $element.addClass('animate');
@@ -60,9 +58,6 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
     dragging = true;
     offsetX = lastX - startX;
-    console.log('Starting drag');
-    console.log('Offset:', offsetX);
-    $ionicBody.addClass('drawer-open');
   };
 
   var startTargetDrag = function(e) {
@@ -71,8 +66,6 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     dragging = true;
     isTargetDrag = true;
     offsetX = lastX - startX;
-    console.log('Starting target drag');
-    console.log('Offset:', offsetX);
   };
 
   var doEndDrag = function(e) {
@@ -87,11 +80,16 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
     dragging = false;
 
-    console.log('End drag');
     enableAnimation();
 
+    var condition = (newX < (-width / 2))
+
+    if (side == RIGHT) {
+      condition = (newX > (width / 100 * 20))
+    }
+
     ionic.requestAnimationFrame(function() {
-      if(newX > (width / 100 * 20)) {
+      if(condition) {
         self.close()
       } else {
         self.open()
@@ -126,7 +124,11 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         }
       }
     } else {
-      newX = Math.max(0, width- (clientWidth - (lastX - offsetX)));
+      newX = Math.min(0, (-width + (lastX - offsetX)));
+      
+      if (side == RIGHT) {
+        newX = Math.max(0, width - (clientWidth - (lastX - offsetX)));
+      }
 
       ionic.requestAnimationFrame(function() {
         el.style.transform = el.style.webkitTransform = 'translate3d(' + newX + 'px, 0, 0)';
@@ -192,22 +194,20 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     link: function($scope, $element, $attr, ctrl) {
       $element.addClass($attr.side);
 
-      ctrl.opened = false;
+      ctrl.init();
 
       $scope.toggleDrawer = function() {
         if (ctrl.opened) {
-          $scope.closeDrawer();
+          ctrl.close();
         } else {
-          $scope.openDrawer();
+          ctrl.open();
         }
       };
 
       $scope.openDrawer = function() {
-        console.log('open');
         ctrl.open();
       };
       $scope.closeDrawer = function() {
-        console.log('close');
         ctrl.close();
       };
     }
