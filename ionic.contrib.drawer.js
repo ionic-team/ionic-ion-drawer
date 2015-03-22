@@ -212,7 +212,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       };
     }
   }
-}]);
+}])
 
 .directive('drawerClose', ['$rootScope', function($rootScope) {
   return {
