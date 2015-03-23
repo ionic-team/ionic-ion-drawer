@@ -55,6 +55,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   var startDrag = function(e) {
     disableAnimation();
+    $ionicScrollDelegate.freezeAllScrolls(true);
 
     dragging = true;
     offsetX = lastX - startX;
@@ -146,7 +147,6 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     edgeX = clientWidth - edgeX
   }
   $ionicGesture.on('drag', function(e) {
-    $ionicScrollDelegate.freezeAllScrolls(true);
     doDrag(e);
   }, $document);
   $ionicGesture.on('dragend', function(e) {
