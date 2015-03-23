@@ -13,7 +13,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   var el = $element[0];
   var dragging = false;
-  var startX, lastX, offsetX, newX;
+  var startX, lastX, offsetX, newX, startDragX;
   var side;
 
   // How far to drag before triggering
@@ -62,7 +62,6 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   var startTargetDrag = function(e) {
     disableAnimation();
-    $ionicScrollDelegate.freezeAllScrolls(true);
     
     dragging = true;
     isTargetDrag = true;
@@ -104,15 +103,20 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     }
 
     if(!lastX) {
+      startDragX = e.gesture.touches[0].pageX;
       startX = e.gesture.touches[0].pageX;
     }
+    
+    var position = el.getBoundingClientRect();
 
     lastX = e.gesture.touches[0].pageX;
 
     if (!dragging) {
       // Dragged 15 pixels and finger is by edge
       if (isTarget(e.target)) {
+        startX = position.left;
         startTargetDrag(e);
+        
       } else if (Math.abs(lastX - startX) > thresholdX) {
         if (side == RIGHT) {
           if (startX > edgeX) {
@@ -127,6 +131,10 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     } else {
       newX = Math.min(0, (-width + (lastX - offsetX)));
       
+      if (Math.abs(startDragX - lastX) > thresholdX) {
+        $ionicScrollDelegate.freezeAllScrolls(true);
+      }
+        
       if (side == RIGHT) {
         newX = Math.max(0, width - (clientWidth - (lastX - offsetX)));
       }
