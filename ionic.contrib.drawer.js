@@ -12,7 +12,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 .controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$document', '$ionicPlatform', function($element, $attr, $ionicGesture, $document, $ionicPlatform) {
   var el = $element[0];
   var dragging = false;
-  var startX, lastX, offsetX, newX, startDir;
+  var startX, lastX, offsetX, newX;
 
   // How far to drag before triggering
   var thresholdX = 15;
@@ -28,6 +28,8 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   var side = $attr.side === SIDE_LEFT ? SIDE_LEFT : SIDE_RIGHT;
   var width = el.clientWidth;
+  var docWidth = $document[0].body.clientWidth;
+  console.log(docWidth)
   
   // Handle back button
   var unregisterBackAction;
@@ -94,7 +96,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   };
 
   var doEndDrag = function(e) {
-    startX = lastX = offsetX = startDir = null;
+    startX = lastX = offsetX = null;
     isTargetDrag = false;
 
     if (!dragging) {
@@ -108,12 +110,22 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     var translateX = 0;
     var opacity = 0;
     
-    if (newX < (-width / 2)) {
-      translateX = -width;
-      drawerState = STATE_CLOSE;
-    } else {
-      opacity = 1;
-      drawerState = STATE_OPEN;
+    if (side === SIDE_RIGHT){
+      if (newX > width / 2) {
+        translateX = width;
+        drawerState = STATE_CLOSE;
+      } else {
+        opacity = 1;
+        drawerState = STATE_OPEN;
+      }      
+    } else if (side === SIDE_LEFT){
+      if (newX < (-width / 2)) {
+        translateX = -width;
+        drawerState = STATE_CLOSE;
+      } else {
+        opacity = 1;
+        drawerState = STATE_OPEN;
+      }
     }
 
     toggleOverlay(drawerState);
@@ -136,53 +148,82 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       startX = finger.pageX;
     }
 
-    if (!startDir) {
-      startDir = dir;
-    }
-
     lastX = finger.pageX;
     
-    if (startDir === 'down' || startDir === 'up') {
+    if (dir === 'down' || dir === 'up') {
       return;
     }
 
     if (!dragging) {
+      //here at just the beginning of drag
       // Dragged 15 pixels and finger is by edge
       if (Math.abs(lastX - startX) > thresholdX) {
-        if (isOpen()) {
-          if (dir === SIDE_RIGHT) {
-            return;
+        if (side === SIDE_LEFT){
+          if (isOpen()) {
+            if (dir === SIDE_RIGHT) {
+              return;
+            }
+          } else {
+            if (dir === SIDE_LEFT) {
+              return;
+            }
           }
-        } else {
-          if (dir === SIDE_LEFT) {
-            return;
+        } else if (side === SIDE_RIGHT){
+          if (isOpen()) {
+            if (dir === SIDE_LEFT) {
+              return;
+            }
+          } else {
+            if (dir === SIDE_RIGHT) {
+              return;
+            }
           }
         }
 
         if (isTarget(e.target)) {
           startTargetDrag(e);
-        } else if(startX < edgeX) {
+        } else if(startX < edgeX || startX > docWidth-edgeX) {
           startDrag(e);
         } 
       }
     } else {
+      //here when we are dragging
       e.gesture.srcEvent.stopImmediatePropagation();
 
+      // if fast gesture
       if (e.gesture.deltaTime < 200) {
-        if (isOpen()) {
-          if (dir === SIDE_LEFT) {
-            return newX = -width;
+        if (side === SIDE_LEFT){
+          if (isOpen()) {
+            if (dir === SIDE_LEFT) {
+              return newX = -width;
+            }
+          } else {
+            if (dir === SIDE_RIGHT) {
+              return newX = 0;
+            }
           }
-        } else {
-          if (dir === SIDE_RIGHT) {
-            return newX = 0;
+        } else if (side === SIDE_RIGHT){
+          if (isOpen()) {
+            if (dir === SIDE_RIGHT) {
+              return newX = width;
+            }
+          } else {
+            if (dir === SIDE_LEFT) {
+              return newX = 0;
+            }
           }
         }
       }
 
-      newX = Math.min(0, (-width + (lastX - offsetX)));
+      if (side === SIDE_LEFT){
+        newX = Math.min(0, (-width + (lastX - offsetX)));
+        var opacity = 1 + (newX / width);
+      }
+      else if (side === SIDE_RIGHT){
+        newX = Math.max(0, (width - (docWidth - lastX + offsetX)));
+        var opacity = 1 - (newX / width);
+      }
 
-      var opacity = 1 + (newX / width);
       
       if (opacity < 0) {
         opacity = 0;
@@ -259,18 +300,6 @@ angular.module('ionic.contrib.drawer', ['ionic'])
           ctrl.open();
         }
       };
-    }
-  }
-}])
-
-.directive('drawerClose', ['$rootScope', function($rootScope) {
-  return {
-    restrict: 'A',
-    link: function($scope, $element) {
-      $element.bind('click', function() {
-        var drawerCtrl = $element.inheritedData('$drawerController');
-        drawerCtrl.close();
-      });
     }
   }
 }]);
