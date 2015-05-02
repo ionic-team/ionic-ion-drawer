@@ -182,7 +182,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
         if (isTarget(e.target)) {
           startTargetDrag(e);
-        } else if(startX < edgeX || startX > docWidth-edgeX) {
+        } else if((startX < edgeX && side === SIDE_LEFT) || (startX > docWidth-edgeX && side === SIDE_RIGHT)) {
           startDrag(e);
         } 
       }
@@ -218,8 +218,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       if (side === SIDE_LEFT){
         newX = Math.min(0, (-width + (lastX - offsetX)));
         var opacity = 1 + (newX / width);
-      }
-      else if (side === SIDE_RIGHT){
+      } else if (side === SIDE_RIGHT){
         newX = Math.max(0, (width - (docWidth - lastX + offsetX)));
         var opacity = 1 - (newX / width);
       }
