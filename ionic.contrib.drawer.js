@@ -180,7 +180,8 @@ angular.module('ionic.contrib.drawer', ['ionic'])
           }
         }
 
-        if (isTarget(e.target)) {
+        // Menu is open and drag has reached target
+        if (e.gesture.center.pageX < width && isOpen()) {
           startTargetDrag(e);
         } else if((startX < edgeX && side === SIDE_LEFT) || (startX > docWidth-edgeX && side === SIDE_RIGHT)) {
           startDrag(e);
