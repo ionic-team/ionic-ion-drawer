@@ -7,7 +7,7 @@ drawer {
   background: #ffffff;
 }
 
-drawer.animate {
+drawer.animate, .menu-animated {
   -webkit-transition: -webkit-transform 0.4s ease-in-out;
   transition: transform 0.4s ease-in-out;
 }

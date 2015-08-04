@@ -29,7 +29,6 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   var side = $attr.side === SIDE_LEFT ? SIDE_LEFT : SIDE_RIGHT;
   var width = el.clientWidth;
   var docWidth = $document[0].body.clientWidth;
-  console.log(docWidth)
   
   // Handle back button
   var unregisterBackAction;
@@ -41,6 +40,10 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   var $overlay = angular.element('<div class="drawer-overlay" />');
   var overlayEl = $overlay[0];
   var overlayState = STATE_CLOSE;
+
+  // Content container
+  var $content = $element.parent().find('ion-side-menu-content');
+  var contentEl = $content[0];
   
   $element.parent().prepend(overlayEl);
   
@@ -57,11 +60,13 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   var enableAnimation = function() {
     $element.addClass('animate');
     $overlay.addClass('animate');
+    $content.addClass('animate menu-animated');
   };
   
   var disableAnimation = function() {
     $element.removeClass('animate');
     $overlay.removeClass('animate');
+    $content.removeClass('animate menu-animated');
   };
 
   // Check if this is on target or not
@@ -133,6 +138,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     ionic.requestAnimationFrame(function() {
       overlayEl.style.opacity = opacity;
       el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + 'px, 0, 0)';
+      contentEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + (translateX - width) + 'px, 0, 0)';
     });
   };
 
@@ -231,6 +237,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       ionic.requestAnimationFrame(function() {
         overlayEl.style.opacity = opacity;
         el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + newX + 'px, 0, 0)';
+        contentEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + (newX - width) + 'px, 0, 0)';
       }); 
     }
 
@@ -251,6 +258,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     ionic.requestAnimationFrame(function() {
       overlayEl.style.opacity = 0;
       el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + (side === SIDE_LEFT ? '-' : '') + '100%, 0, 0)';
+      contentEl.style[ionic.CSS.TRANSFORM] = 'translate3d(0%, 0, 0)';
     });
     
     if (unregisterBackAction) {
