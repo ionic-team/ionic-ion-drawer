@@ -42,7 +42,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   var overlayState = STATE_CLOSE;
 
   // Content container
-  var $content = $element.parent().find('ion-side-menu-content');
+  var $content = $element.parent().find('drawer-content');
   var contentEl = $content[0];
   
   $element.parent().prepend(overlayEl);
@@ -273,6 +273,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     ionic.requestAnimationFrame(function() {
       overlayEl.style.opacity = 1;
       el.style[ionic.CSS.TRANSFORM] = 'translate3d(0, 0, 0)';
+      contentEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + -width +  'px, 0, 0)';
     });
     
     unregisterBackAction = $ionicPlatform.registerBackButtonAction(hardwareBackCallback, 100);
@@ -309,6 +310,64 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       };
     }
   }
-}]);
+}])
+
+.directive('drawerContent', [function() {
+  return {
+    restrict: 'E',
+    require: '^ionSideMenus',
+    scope: true,
+    compile: function(element, attr) {
+      element.addClass('menu-content pane');
+
+      return { pre: prelink };
+      function prelink($scope, $element, $attr, sideMenuCtrl) {
+        var content = {
+          element: element[0],
+          getTranslateX: function() {
+            return $scope.sideMenuContentTranslateX || 0;
+          }
+        };
+
+        sideMenuCtrl.setContent(content);
+
+        // Cleanup
+        $scope.$on('$destroy', function() {
+          if (content) {
+            content.element = null;
+            content = null;
+          }
+        });
+      }
+    }
+  };
+}])
+
+.directive('drawerClose', ['$ionicHistory', function($ionicHistory) {
+  return {
+    restrict: 'A',
+    link: function($scope, $element, $attr, ctrl) {
+      $element.bind('click', function() {
+        $ionicHistory.nextViewOptions({
+          disableAnimate: true,
+          disableBack: true
+        });
+        $scope.closeDrawer();
+      });
+    }
+  }
+}])
+
+.directive('drawerToggle', [function() {
+  return {
+    restrict: 'A',
+    link: function($scope, $element, $attr, ctrl) {
+      $element.bind('click', function() {
+        $scope.toggleDrawer();
+      });
+    }
+  }
+}])
+;
 
 })();
