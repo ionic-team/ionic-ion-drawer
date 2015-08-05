@@ -65,7 +65,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     
     var toggleOverlay = function(state) {
       if (overlayState !== state) {
-        var timeToRemove = state == STATE_CLOSE ? 400 : 0;
+        var timeToRemove = state === STATE_CLOSE ? 400 : 0;
         $timeout(function() {
           ionic.requestAnimationFrame(function() {
             var translateX = state === STATE_CLOSE ? '-100' : '0';
@@ -166,10 +166,13 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
       toggleOverlay(drawerState);
 
+      var contentOffsetX = side === SIDE_RIGHT ?
+        translateX - width :
+        width + translateX;
       ionic.requestAnimationFrame(function() {
         overlayEl.style.opacity = opacity;
         el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + 'px, 0, 0)';
-        contentEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + (translateX - width) + 'px, 0, 0)';
+        contentEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + contentOffsetX + 'px, 0, 0)';
       });
     };
 
@@ -260,15 +263,19 @@ angular.module('ionic.contrib.drawer', ['ionic'])
           var opacity = 1 - (newX / width);
         }
 
-        
+
         if (opacity < 0) {
           opacity = 0;
+          return;
         }
-        
+
+        var contentOffsetX = side === SIDE_RIGHT ?
+          newX - width :
+          width + newX;
         ionic.requestAnimationFrame(function() {
           overlayEl.style.opacity = opacity;
           el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + newX + 'px, 0, 0)';
-          contentEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + (newX - width) + 'px, 0, 0)';
+          contentEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + contentOffsetX + 'px, 0, 0)';
         }); 
       }
 
@@ -301,10 +308,13 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       drawerState = STATE_OPEN;
       enableAnimation();
       toggleOverlay(STATE_OPEN);
+
+      var contentOffsetX = side === SIDE_LEFT ? width : -width;
+
       ionic.requestAnimationFrame(function() {
         overlayEl.style.opacity = 1;
         el.style[ionic.CSS.TRANSFORM] = 'translate3d(0, 0, 0)';
-        contentEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + -width +  'px, 0, 0)';
+        contentEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + contentOffsetX +  'px, 0, 0)';
       });
       
       unregisterBackAction = $ionicPlatform.registerBackButtonAction(hardwareBackCallback, 100);
