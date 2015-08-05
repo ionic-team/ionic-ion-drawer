@@ -15,6 +15,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   '$ionicGesture',
   '$ionicSideMenuDelegate',
   '$document',
+  '$timeout',
   '$ionicPlatform',
   function(
     $element,
@@ -22,6 +23,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     $ionicGesture,
     $ionicSideMenuDelegate,
     $document,
+    $timeout,
     $ionicPlatform
   ) {
     var el = $element[0];
@@ -63,10 +65,13 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     
     var toggleOverlay = function(state) {
       if (overlayState !== state) {
-        ionic.requestAnimationFrame(function() {
-          var translateX = state === STATE_CLOSE ? '-100' : '0';
-          overlayEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + '%, 0, 0)';
-        });
+        var timeToRemove = state == STATE_CLOSE ? 400 : 0;
+        $timeout(function() {
+          ionic.requestAnimationFrame(function() {
+            var translateX = state === STATE_CLOSE ? '-100' : '0';
+            overlayEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + '%, 0, 0)';
+          });
+        }, timeToRemove)
         overlayState = state;
       }
     };
