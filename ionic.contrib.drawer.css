@@ -26,6 +26,10 @@ drawer.right {
   box-shadow: -1px 0px 10px rgba(0,0,0,0.3);
 }
 
+.drawer.closed {
+  box-shadow: none;
+}
+
 .drawer-overlay {
   background-color: rgba(0, 0, 0, 0.6);
   opacity: 0;

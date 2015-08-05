@@ -31,9 +31,9 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     var startX, lastX, offsetX, newX;
 
     // How far to drag before triggering
-    var thresholdX = 15;
+    var thresholdX = 7;
     // How far from edge before triggering
-    var edgeX = 40;
+    var edgeX = 60;
 
     var SIDE_LEFT = 'left';
     var SIDE_RIGHT = 'right';
@@ -65,11 +65,23 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     
     var toggleOverlay = function(state) {
       if (overlayState !== state) {
-        var timeToRemove = state === STATE_CLOSE ? 400 : 0;
+        var timeToRemove = state === STATE_CLOSE ? 300 : 0;
+
+        if (state === STATE_OPEN) {
+          $element
+            .removeClass('closed')
+            .addClass('opened');
+        }
+
         $timeout(function() {
           ionic.requestAnimationFrame(function() {
             var translateX = state === STATE_CLOSE ? '-100' : '0';
             overlayEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + '%, 0, 0)';
+            if (state === STATE_CLOSE) {
+              $element
+                .removeClass('opened')
+                .addClass('closed');
+            }
           });
         }, timeToRemove)
         overlayState = state;
@@ -173,6 +185,9 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         overlayEl.style.opacity = opacity;
         el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + 'px, 0, 0)';
         contentEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + contentOffsetX + 'px, 0, 0)';
+        $element
+          .removeClass('opened closed')
+          .addClass(drawerState === STATE_OPEN ? 'opened' : 'closed');
       });
     };
 
@@ -276,6 +291,9 @@ angular.module('ionic.contrib.drawer', ['ionic'])
           overlayEl.style.opacity = opacity;
           el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + newX + 'px, 0, 0)';
           contentEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + contentOffsetX + 'px, 0, 0)';
+          $element
+            .removeClass('closed')
+            .addClass('opened');
         }); 
       }
 
@@ -333,7 +351,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     restrict: 'E',
     controller: 'drawerCtrl',
     link: function($scope, $element, $attr, ctrl) {
-      $element.addClass($attr.side);
+      $element.addClass($attr.side + ' closed');
       
       $scope.openDrawer = function() {
         ctrl.open();
