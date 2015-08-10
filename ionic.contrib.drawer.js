@@ -235,11 +235,11 @@ angular.module('ionic.contrib.drawer', ['ionic'])
             }
           }
 
-          if (isTarget(e.target)) {
-            startTargetDrag(e);
-          } else if((startX < edgeX && side === SIDE_LEFT) || (startX > docWidth-edgeX && side === SIDE_RIGHT)) {
+          // if (isTarget(e.target)) {
+          //   startTargetDrag(e);
+          // } else if((startX < edgeX && side === SIDE_LEFT) || (startX > docWidth-edgeX && side === SIDE_RIGHT)) {
             startDrag(e);
-          } 
+          // } 
         }
       } else {
         //here when we are dragging
