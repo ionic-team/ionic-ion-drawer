@@ -262,20 +262,18 @@
                 }.bind(this);
 
                 this.close = function () {
-                    $timeout(function () {
-                        drawerState = STATE_CLOSE;
-                        enableAnimation();
-                        toggleOverlay(STATE_CLOSE);
+                    drawerState = STATE_CLOSE;
+                    enableAnimation();
+                    toggleOverlay(STATE_CLOSE);
 
-                        ionic.requestAnimationFrame(function () {
-                            overlayEl.style.opacity = 0;
-                            el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + (side === SIDE_LEFT ? '-' : '') + '100%, 0, 0)';
-                        });
+                    ionic.requestAnimationFrame(function () {
+                        overlayEl.style.opacity = 0;
+                        el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + (side === SIDE_LEFT ? '-' : '') + '100%, 0, 0)';
+                    });
 
-                        if (unregisterBackAction) {
-                            unregisterBackAction();
-                        }
-                    }, 300);
+                    if (unregisterBackAction) {
+                        unregisterBackAction();
+                    }
                 };
 
                 this.open = function () {
@@ -324,7 +322,7 @@
                 }
             }
         }])
-        .directive('drawerClose', ['$ionicHistory', function ($ionicHistory) {
+        .directive('drawerClose', ['$ionicHistory', '$timeout', function ($ionicHistory, $timeout) {
             return {
                 restrict: 'A',
                 link: function ($scope, $element, $attr, ctrl) {
@@ -333,7 +331,15 @@
                             disableAnimate: true,
                             disableBack: true
                         });
-                        $scope.closeDrawer();
+
+                        if (($attr.goNative !== undefined) && window.plugins && window.plugins.nativepagetransitions) {
+                            $timeout(function () {
+                                $scope.closeDrawer();
+                                console.log('waited');
+                            }, window.plugins.nativepagetransitions.globalOptions.duration);
+                        } else {
+                            $scope.closeDrawer();
+                        }
                     });
                 }
             }
