@@ -26,7 +26,7 @@ drawer.right {
   box-shadow: -1px 0px 10px rgba(0,0,0,0.3);
 }
 
-.drawer.closed {
+drawer.closed {
   box-shadow: none;
 }
 
