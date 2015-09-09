@@ -335,7 +335,6 @@
                         if (($attr.goNative !== undefined) && window.plugins && window.plugins.nativepagetransitions) {
                             $timeout(function () {
                                 $scope.closeDrawer();
-                                console.log('waited');
                             }, window.plugins.nativepagetransitions.globalOptions.duration);
                         } else {
                             $scope.closeDrawer();
