@@ -30,6 +30,7 @@
 
                 // How far to drag before triggering
                 var thresholdX = 7;
+                var edgeX = 60;
 
                 var SIDE_LEFT = 'left';
                 var SIDE_RIGHT = 'right';
@@ -90,6 +91,15 @@
                     $overlay.removeClass('animate');
                 };
 
+                var isTarget = function(targetEl) {
+                    while (targetEl) {
+                        if (targetEl === el) {
+                            return true;
+                        }
+                        targetEl = targetEl.parentNode;
+                    }
+                };
+
                 var isOpen = function () {
                     return drawerState === STATE_OPEN;
                 };
@@ -103,6 +113,19 @@
                     toggleOverlay(STATE_OPEN);
 
                     dragging = true;
+                    offsetX = lastX - startX;
+                };
+
+                var startTargetDrag = function(e) {
+                    if (!$ionicSideMenuDelegate.canDragContent()) {
+                        return;
+                    }
+
+                    disableAnimation();
+                    toggleOverlay(STATE_OPEN);
+
+                    dragging = true;
+                    isTargetDrag = true;
                     offsetX = lastX - startX;
                 };
 
@@ -197,7 +220,11 @@
                                 }
                             }
 
-                            startDrag(e);
+                            if(isTarget(e.target)) {
+                                startTargetDrag(e);
+                            } else if((startX < edgeX && side === SIDE_LEFT) || (startX > docWidth-edgeX && side === SIDE_RIGHT)) {
+                                startDrag(e);
+                            }
                         }
                     } else {
                         //here when we are dragging

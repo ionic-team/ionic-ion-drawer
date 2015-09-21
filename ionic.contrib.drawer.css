@@ -1,8 +1,8 @@
 drawer {
   display: block;
   position: fixed;
-  width: 270px;
   height: 100%;
+  width: 90%;
   z-index: 100;
   background: #ffffff;
 }
