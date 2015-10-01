@@ -364,7 +364,9 @@
                                 $scope.closeDrawer();
                             }, window.plugins.nativepagetransitions.globalOptions.duration);
                         } else {
-                            $scope.closeDrawer();
+                            $timeout(function() {
+                                $scope.closeDrawer();
+                            }, 500);
                         }
                     });
                 }
