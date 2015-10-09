@@ -14,7 +14,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   var dragging = false;
   var startX, lastX, offsetX, newX;
   var side;
-
+  var STATE = null;
   // How far to drag before triggering
   var thresholdX = 15;
   // How far from edge before triggering
@@ -81,8 +81,10 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     ionic.requestAnimationFrame(function() {
       if(newX < (-width / 2)) {
         el.style.transform = el.style.webkitTransform = 'translate3d(' + -width + 'px, 0, 0)';
+        STATE = 'close';
       } else {
         el.style.transform = el.style.webkitTransform = 'translate3d(0px, 0, 0)';
+        STATE = 'open';
       }
     });
   };
@@ -135,6 +137,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   this.close = function() {
     enableAnimation();
+    STATE = 'close';
     ionic.requestAnimationFrame(function() {
       if(side === LEFT) {
         el.style.transform = el.style.webkitTransform = 'translate3d(-100%, 0, 0)';
@@ -146,6 +149,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   this.open = function() {
     enableAnimation();
+    STATE = 'open';
     ionic.requestAnimationFrame(function() {
       if(side === LEFT) {
         el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
@@ -154,22 +158,48 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       }
     });
   };
+
+  this.toggle = function () {
+      if (STATE === 'open') {
+          this.close();
+      } else {
+          this.open();
+      }
+  };
+
+  this.isOpen = function () {
+      return STATE === 'open';
+  };
 }])
 
-.directive('drawer', ['$rootScope', '$ionicGesture', function($rootScope, $ionicGesture) {
+.directive('drawer', ['$rootScope', '$ionicGesture', '$window', function($rootScope, $ionicGesture, $window) {
   return {
     restrict: 'E',
     controller: 'drawerCtrl',
     link: function($scope, $element, $attr, ctrl) {
+      var intendedAction = false;
+      var autoClose = angular.isDefined($attr.autoclose);
       $element.addClass($attr.side);
       $scope.openDrawer = function() {
-        console.log('open');
+        intendedAction = true;
         ctrl.open();
       };
       $scope.closeDrawer = function() {
-        console.log('close');
+        intendedAction = true;
         ctrl.close();
       };
+      $scope.toggleDrawer = function () {
+        intendedAction = true;
+        ctrl.toggle();
+      };
+      angular.element($window).bind('click', function (event) {
+          var target = event.target,
+              el = $element[0];
+          if (autoClose && el !== target && !el.contains(target) && ctrl.isOpen() && !intendedAction) {
+              ctrl.close();
+          }
+          intendedAction = false;
+      });
     }
   }
 }])
