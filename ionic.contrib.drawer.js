@@ -106,7 +106,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
           startTargetDrag(e);
         } else if(startX < edgeX) {
           startDrag(e);
-        } 
+        }
       }
     } else {
       console.log(lastX, offsetX, lastX - offsetX);
@@ -172,7 +172,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
       };
     }
   }
-}]);
+}])
 
 .directive('drawerClose', ['$rootScope', function($rootScope) {
   return {
