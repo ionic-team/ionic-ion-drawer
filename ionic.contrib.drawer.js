@@ -16,6 +16,7 @@
             '$ionicSideMenuDelegate',
             '$document',
             '$timeout',
+            '$ionicHistory',
             '$ionicPlatform',
             function ($element,
                       $attr,
@@ -23,6 +24,7 @@
                       $ionicSideMenuDelegate,
                       $document,
                       $timeout,
+                      $ionicHistory,
                       $ionicPlatform) {
                 var el = $element[0];
                 var dragging = false;
@@ -55,6 +57,37 @@
                 var overlayState = STATE_CLOSE;
 
                 $element.parent().prepend(overlayEl);
+
+                var closeDrawer = function () {
+                    this.close();
+                    drawerState = STATE_CLOSE;
+                }.bind(this);
+
+                var backButtonPressedOnceToExit = false;
+
+                $ionicPlatform.registerBackButtonAction(function (e) {
+                    if(drawerState == 'open') {
+                        closeDrawer();
+                    } else {
+                        if (backButtonPressedOnceToExit) {
+                            ionic.Platform.exitApp();
+                        }
+
+                        else if ($ionicHistory.backView()) {
+                            $ionicHistory.goBack();
+                        }
+                        else {
+                            backButtonPressedOnceToExit = true;
+                            window.plugins.toast.showShortBottom("Vėl paspauskite atgal kad uždaryti aplikaciją");
+                            setTimeout(function () {
+                                backButtonPressedOnceToExit = false;
+                            }, 2000);
+                        }
+                    }
+                    e.preventDefault();
+                    return false;
+                }, 101);
+
 
                 var toggleOverlay = function (state) {
                     if (overlayState !== state) {
@@ -91,7 +124,7 @@
                     $overlay.removeClass('animate');
                 };
 
-                var isTarget = function(targetEl) {
+                var isTarget = function (targetEl) {
                     while (targetEl) {
                         if (targetEl === el) {
                             return true;
@@ -116,7 +149,7 @@
                     offsetX = lastX - startX;
                 };
 
-                var startTargetDrag = function(e) {
+                var startTargetDrag = function (e) {
                     if (!$ionicSideMenuDelegate.canDragContent()) {
                         return;
                     }
@@ -220,9 +253,9 @@
                                 }
                             }
 
-                            if(isTarget(e.target)) {
+                            if (isTarget(e.target)) {
                                 startTargetDrag(e);
-                            } else if((startX < edgeX && side === SIDE_LEFT) || (startX > docWidth-edgeX && side === SIDE_RIGHT)) {
+                            } else if ((startX < edgeX && side === SIDE_LEFT) || (startX > docWidth - edgeX && side === SIDE_RIGHT)) {
                                 startDrag(e);
                             }
                         }
@@ -354,17 +387,28 @@
                 restrict: 'A',
                 link: function ($scope, $element, $attr, ctrl) {
                     $element.bind('click', function () {
-                        $ionicHistory.nextViewOptions({
-                            disableAnimate: true,
-                            disableBack: true
-                        });
+
+                        var historyOptions = {};
+
+                        if ($attr.uiSref == 'app.main') {
+                            historyOptions = {
+                                disableAnimate: true,
+                                disableBack: true
+                            };
+                        } else {
+                            historyOptions = {
+                                disableAnimate: true
+                            };
+                        }
+
+                        $ionicHistory.nextViewOptions(historyOptions);
 
                         if (($attr.goNative !== undefined) && window.plugins && window.plugins.nativepagetransitions) {
                             $timeout(function () {
                                 $scope.closeDrawer();
                             }, window.plugins.nativepagetransitions.globalOptions.duration);
                         } else {
-                            $timeout(function() {
+                            $timeout(function () {
                                 $scope.closeDrawer();
                             }, 500);
                         }
@@ -372,7 +416,6 @@
                 }
             }
         }])
-
         .directive('drawerToggle', [function () {
             return {
                 restrict: 'A',
@@ -383,5 +426,6 @@
                 }
             }
         }]);
+
 
 })();
