@@ -31,7 +31,7 @@
                 var startX, lastX, offsetX, newX;
 
                 // How far to drag before triggering
-                var thresholdX = 7;
+                var thresholdX = 2;
                 var edgeX = 60;
 
                 var SIDE_LEFT = 'left';
@@ -66,7 +66,7 @@
                 var backButtonPressedOnceToExit = false;
 
                 $ionicPlatform.registerBackButtonAction(function (e) {
-                    if(drawerState == 'open') {
+                    if (drawerState == 'open') {
                         closeDrawer();
                     } else {
                         if (backButtonPressedOnceToExit) {
@@ -426,6 +426,4 @@
                 }
             }
         }]);
-
-
 })();
