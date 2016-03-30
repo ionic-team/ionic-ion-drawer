@@ -1,189 +1,431 @@
-(function() {
+(function () {
 
-'use strict';
+    'use strict';
 
-/**
- * The ionic-contrib-frosted-glass is a fun frosted-glass effect
- * that can be used in iOS apps to give an iOS 7 frosted-glass effect
- * to any element.
- */
-angular.module('ionic.contrib.drawer', ['ionic'])
+    /**
+     * The ionic-contrib-frosted-glass is a fun frosted-glass effect
+     * that can be used in iOS apps to give an iOS 7 frosted-glass effect
+     * to any element.
+     */
+    angular.module('ionic.contrib.drawer', ['ionic'])
 
-.controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$document', function($element, $attr, $ionicGesture, $document) {
-  var el = $element[0];
-  var dragging = false;
-  var startX, lastX, offsetX, newX;
-  var side;
+        .controller('drawerCtrl', [
+            '$element',
+            '$attrs',
+            '$ionicGesture',
+            '$ionicSideMenuDelegate',
+            '$document',
+            '$timeout',
+            '$ionicHistory',
+            '$ionicPlatform',
+            function ($element,
+                      $attr,
+                      $ionicGesture,
+                      $ionicSideMenuDelegate,
+                      $document,
+                      $timeout,
+                      $ionicHistory,
+                      $ionicPlatform) {
+                var el = $element[0];
+                var dragging = false;
+                var startX, lastX, offsetX, newX;
 
-  // How far to drag before triggering
-  var thresholdX = 15;
-  // How far from edge before triggering
-  var edgeX = 40;
+                // How far to drag before triggering
+                var thresholdX = 2;
+                var edgeX = 60;
 
-  var LEFT = 0;
-  var RIGHT = 1;
+                var SIDE_LEFT = 'left';
+                var SIDE_RIGHT = 'right';
+                var STATE_CLOSE = 'close';
+                var STATE_OPEN = 'open';
 
-  var isTargetDrag = false;
+                var isTargetDrag = false;
 
-  var width = $element[0].clientWidth;
+                var side = $attr.side === SIDE_LEFT ? SIDE_LEFT : SIDE_RIGHT;
+                var width = el.clientWidth;
+                var docWidth = $document[0].body.clientWidth;
 
-  var enableAnimation = function() {
-    $element.addClass('animate');
-  };
-  var disableAnimation = function() {
-    $element.removeClass('animate');
-  };
+                // Handle back button
+                var unregisterBackAction;
 
-  // Check if this is on target or not
-  var isTarget = function(el) {
-    while(el) {
-      if(el === $element[0]) {
-        return true;
-      }
-      el = el.parentNode;
-    }
-  };
+                // Current State of Drawer
+                var drawerState = STATE_CLOSE;
 
-  var startDrag = function(e) {
-    disableAnimation();
+                // Drawer overlay
+                var $overlay = angular.element('<div class="drawer-overlay" />');
+                var overlayEl = $overlay[0];
+                var overlayState = STATE_CLOSE;
 
-    dragging = true;
-    offsetX = lastX - startX;
-    console.log('Starting drag');
-    console.log('Offset:', offsetX);
-  };
+                $element.parent().prepend(overlayEl);
 
-  var startTargetDrag = function(e) {
-    disableAnimation();
+                var closeDrawer = function () {
+                    this.close();
+                    drawerState = STATE_CLOSE;
+                }.bind(this);
 
-    dragging = true;
-    isTargetDrag = true;
-    offsetX = lastX - startX;
-    console.log('Starting target drag');
-    console.log('Offset:', offsetX);
-  };
+                var backButtonPressedOnceToExit = false;
 
-  var doEndDrag = function(e) {
-    startX = null;
-    lastX = null;
-    offsetX = null;
-    isTargetDrag = false;
+                $ionicPlatform.registerBackButtonAction(function (e) {
+                    if (drawerState == 'open') {
+                        closeDrawer();
+                    } else {
+                        if (backButtonPressedOnceToExit) {
+                            ionic.Platform.exitApp();
+                        }
 
-    if(!dragging) {
-      return;
-    }
-
-    dragging = false;
-
-    console.log('End drag');
-    enableAnimation();
-
-    ionic.requestAnimationFrame(function() {
-      if(newX < (-width / 2)) {
-        el.style.transform = el.style.webkitTransform = 'translate3d(' + -width + 'px, 0, 0)';
-      } else {
-        el.style.transform = el.style.webkitTransform = 'translate3d(0px, 0, 0)';
-      }
-    });
-  };
-
-  var doDrag = function(e) {
-    if(e.defaultPrevented) {
-      return;
-    }
-
-    if(!lastX) {
-      startX = e.gesture.touches[0].pageX;
-    }
-
-    lastX = e.gesture.touches[0].pageX;
-
-    if(!dragging) {
-
-      // Dragged 15 pixels and finger is by edge
-      if(Math.abs(lastX - startX) > thresholdX) {
-        if(isTarget(e.target)) {
-          startTargetDrag(e);
-        } else if(startX < edgeX) {
-          startDrag(e);
-        } 
-      }
-    } else {
-      console.log(lastX, offsetX, lastX - offsetX);
-      newX = Math.min(0, (-width + (lastX - offsetX)));
-      ionic.requestAnimationFrame(function() {
-        el.style.transform = el.style.webkitTransform = 'translate3d(' + newX + 'px, 0, 0)';
-      });
-
-    }
-
-    if(dragging) {
-      e.gesture.srcEvent.preventDefault();
-    }
-  };
-
-  side = $attr.side == 'left' ? LEFT : RIGHT;
-  console.log(side);
-
-  $ionicGesture.on('drag', function(e) {
-    doDrag(e);
-  }, $document);
-  $ionicGesture.on('dragend', function(e) {
-    doEndDrag(e);
-  }, $document);
+                        else if ($ionicHistory.backView()) {
+                            $ionicHistory.goBack();
+                        }
+                        else {
+                            backButtonPressedOnceToExit = true;
+                            window.plugins.toast.showShortBottom("Vėl paspauskite atgal kad uždaryti aplikaciją");
+                            setTimeout(function () {
+                                backButtonPressedOnceToExit = false;
+                            }, 2000);
+                        }
+                    }
+                    e.preventDefault();
+                    return false;
+                }, 101);
 
 
-  this.close = function() {
-    enableAnimation();
-    ionic.requestAnimationFrame(function() {
-      if(side === LEFT) {
-        el.style.transform = el.style.webkitTransform = 'translate3d(-100%, 0, 0)';
-      } else {
-        el.style.transform = el.style.webkitTransform = 'translate3d(100%, 0, 0)';
-      }
-    });
-  };
+                var toggleOverlay = function (state) {
+                    if (overlayState !== state) {
+                        var timeToRemove = state === STATE_CLOSE ? 400 : 0;
 
-  this.open = function() {
-    enableAnimation();
-    ionic.requestAnimationFrame(function() {
-      if(side === LEFT) {
-        el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
-      } else {
-        el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
-      }
-    });
-  };
-}])
+                        if (state === STATE_OPEN) {
+                            $element
+                                .removeClass('closed')
+                                .addClass('opened');
+                        }
 
-.directive('drawer', ['$rootScope', '$ionicGesture', function($rootScope, $ionicGesture) {
-  return {
-    restrict: 'E',
-    controller: 'drawerCtrl',
-    link: function($scope, $element, $attr, ctrl) {
-      $element.addClass($attr.side);
-      $scope.openDrawer = function() {
-        console.log('open');
-        ctrl.open();
-      };
-      $scope.closeDrawer = function() {
-        console.log('close');
-        ctrl.close();
-      };
-    }
-  }
-}]);
+                        $timeout(function () {
+                            ionic.requestAnimationFrame(function () {
+                                var translateX = state === STATE_CLOSE ? '-100' : '0';
+                                overlayEl.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + '%, 0, 0)';
+                                if (state === STATE_CLOSE) {
+                                    $element
+                                        .removeClass('opened')
+                                        .addClass('closed');
+                                }
+                            });
+                        }, timeToRemove);
+                        overlayState = state;
+                    }
+                };
 
-.directive('drawerClose', ['$rootScope', function($rootScope) {
-  return {
-    restrict: 'A',
-    link: function($scope, $element) {
-      $element.bind('click', function() {
-        var drawerCtrl = $element.inheritedData('$drawerController');
-        drawerCtrl.close();
-      });
-    }
-  }
-}]);
+                var enableAnimation = function () {
+                    $element.addClass('animate');
+                    $overlay.addClass('animate');
+                };
 
+                var disableAnimation = function () {
+                    $element.removeClass('animate');
+                    $overlay.removeClass('animate');
+                };
+
+                var isTarget = function (targetEl) {
+                    while (targetEl) {
+                        if (targetEl === el) {
+                            return true;
+                        }
+                        targetEl = targetEl.parentNode;
+                    }
+                };
+
+                var isOpen = function () {
+                    return drawerState === STATE_OPEN;
+                };
+
+                var startDrag = function (e) {
+                    if (!$ionicSideMenuDelegate.canDragContent()) {
+                        return;
+                    }
+
+                    disableAnimation();
+                    toggleOverlay(STATE_OPEN);
+
+                    dragging = true;
+                    offsetX = lastX - startX;
+                };
+
+                var startTargetDrag = function (e) {
+                    if (!$ionicSideMenuDelegate.canDragContent()) {
+                        return;
+                    }
+
+                    disableAnimation();
+                    toggleOverlay(STATE_OPEN);
+
+                    dragging = true;
+                    isTargetDrag = true;
+                    offsetX = lastX - startX;
+                };
+
+                var doEndDrag = function (e) {
+                    if (!$ionicSideMenuDelegate.canDragContent()) {
+                        return;
+                    }
+
+                    startX = lastX = offsetX = null;
+                    isTargetDrag = false;
+
+                    if (!dragging) {
+                        return;
+                    }
+
+                    dragging = false;
+
+                    enableAnimation();
+
+                    var translateX = 0;
+                    var opacity = 0;
+
+                    if (side === SIDE_RIGHT) {
+                        if (newX > width / 2) {
+                            translateX = width;
+                            drawerState = STATE_CLOSE;
+                        } else {
+                            opacity = 1;
+                            drawerState = STATE_OPEN;
+                        }
+                    } else if (side === SIDE_LEFT) {
+                        if (newX < (-width / 2)) {
+                            translateX = -width;
+                            drawerState = STATE_CLOSE;
+                        } else {
+                            opacity = 1;
+                            drawerState = STATE_OPEN;
+                        }
+                    }
+
+                    toggleOverlay(drawerState);
+                    ionic.requestAnimationFrame(function () {
+                        overlayEl.style.opacity = opacity;
+                        el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + translateX + 'px, 0, 0)';
+                        $element
+                            .removeClass('opened closed')
+                            .addClass(drawerState === STATE_OPEN ? 'opened' : 'closed');
+                    });
+                };
+
+                var doDrag = function (e) {
+                    if (e.defaultPrevented || !$ionicSideMenuDelegate.canDragContent()) {
+                        return;
+                    }
+
+                    var finger = e.gesture.touches[0];
+                    var dir = e.gesture.direction;
+
+                    if (!lastX) {
+                        startX = finger.pageX;
+                    }
+
+                    lastX = finger.pageX;
+
+                    if (dir === 'down' || dir === 'up') {
+                        return;
+                    }
+
+                    if (!dragging) {
+                        //here at just the beginning of drag
+                        // Dragged 15 pixels and finger is by edge
+                        if (Math.abs(lastX - startX) > thresholdX) {
+                            if (side === SIDE_LEFT) {
+                                if (isOpen()) {
+                                    if (dir === SIDE_RIGHT) {
+                                        return;
+                                    }
+                                } else {
+                                    if (dir === SIDE_LEFT) {
+                                        return;
+                                    }
+                                }
+                            } else if (side === SIDE_RIGHT) {
+                                if (isOpen()) {
+                                    if (dir === SIDE_LEFT) {
+                                        return;
+                                    }
+                                } else {
+                                    if (dir === SIDE_RIGHT) {
+                                        return;
+                                    }
+                                }
+                            }
+
+                            if (isTarget(e.target)) {
+                                startTargetDrag(e);
+                            } else if ((startX < edgeX && side === SIDE_LEFT) || (startX > docWidth - edgeX && side === SIDE_RIGHT)) {
+                                startDrag(e);
+                            }
+                        }
+                    } else {
+                        //here when we are dragging
+                        e.gesture.srcEvent.stopImmediatePropagation();
+
+                        // if fast gesture
+                        if (e.gesture.deltaTime < 200) {
+                            if (side === SIDE_LEFT) {
+                                if (isOpen()) {
+                                    if (dir === SIDE_LEFT) {
+                                        return newX = -width;
+                                    }
+                                } else {
+                                    if (dir === SIDE_RIGHT) {
+                                        return newX = 0;
+                                    }
+                                }
+                            } else if (side === SIDE_RIGHT) {
+                                if (isOpen()) {
+                                    if (dir === SIDE_RIGHT) {
+                                        return newX = width;
+                                    }
+                                } else {
+                                    if (dir === SIDE_LEFT) {
+                                        return newX = 0;
+                                    }
+                                }
+                            }
+                        }
+
+                        var opacity;
+                        if (side === SIDE_LEFT) {
+                            newX = Math.min(0, (-width + (lastX - offsetX)));
+                            opacity = 1 + parseFloat(newX / width).toFixed(2);
+                        } else if (side === SIDE_RIGHT) {
+                            newX = Math.max(0, (width - (docWidth - lastX + offsetX)));
+                            opacity = 1 - parseFloat(newX / width).toFixed(2);
+                        }
+
+
+                        if (opacity < 0) {
+                            opacity = 0;
+                            return;
+                        }
+
+                        ionic.requestAnimationFrame(function () {
+                            overlayEl.style.opacity = opacity;
+                            el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + newX + 'px, 0, 0)';
+                            $element
+                                .removeClass('closed')
+                                .addClass('opened');
+                        });
+                    }
+
+                    if (dragging) {
+                        e.gesture.srcEvent.preventDefault();
+                    }
+                };
+
+                var hardwareBackCallback = function () {
+                    this.close();
+                }.bind(this);
+
+                this.close = function () {
+                    drawerState = STATE_CLOSE;
+                    enableAnimation();
+                    toggleOverlay(STATE_CLOSE);
+
+                    ionic.requestAnimationFrame(function () {
+                        overlayEl.style.opacity = 0;
+                        el.style[ionic.CSS.TRANSFORM] = 'translate3d(' + (side === SIDE_LEFT ? '-' : '') + '100%, 0, 0)';
+                    });
+
+                    if (unregisterBackAction) {
+                        unregisterBackAction();
+                    }
+                };
+
+                this.open = function () {
+                    drawerState = STATE_OPEN;
+                    enableAnimation();
+                    toggleOverlay(STATE_OPEN);
+
+                    ionic.requestAnimationFrame(function () {
+                        overlayEl.style.opacity = 1;
+                        el.style[ionic.CSS.TRANSFORM] = 'translate3d(0, 0, 0)';
+                    });
+
+                    unregisterBackAction = $ionicPlatform.registerBackButtonAction(hardwareBackCallback, 100);
+                };
+
+                this.isOpen = isOpen;
+
+                $ionicGesture.on('drag', doDrag, $document);
+                $ionicGesture.on('dragend', doEndDrag, $document);
+                $overlay.on('click', this.close);
+            }
+        ])
+
+        .directive('drawer', ['$rootScope', '$ionicGesture', function ($rootScope, $ionicGesture) {
+            return {
+                restrict: 'E',
+                controller: 'drawerCtrl',
+                link: function ($scope, $element, $attr, ctrl) {
+                    $element.addClass($attr.side + ' closed');
+
+                    $scope.openDrawer = function () {
+                        ctrl.open();
+                    };
+
+                    $scope.closeDrawer = function () {
+                        ctrl.close();
+                    };
+
+                    $scope.toggleDrawer = function () {
+                        if (ctrl.isOpen()) {
+                            ctrl.close();
+                        } else {
+                            ctrl.open();
+                        }
+                    };
+                  
+                  $scope.drawerIsOpen = ctrl.isOpen;
+                }
+            }
+        }])
+        .directive('drawerClose', ['$ionicHistory', '$timeout', function ($ionicHistory, $timeout) {
+            return {
+                restrict: 'A',
+                link: function ($scope, $element, $attr, ctrl) {
+                    $element.bind('click', function () {
+
+                        var historyOptions = {};
+
+                        if ($attr.uiSref == 'app.main') {
+                            historyOptions = {
+                                disableAnimate: true,
+                                disableBack: true
+                            };
+                        } else {
+                            historyOptions = {
+                                disableAnimate: true
+                            };
+                        }
+
+                        $ionicHistory.nextViewOptions(historyOptions);
+
+                        if (($attr.goNative !== undefined) && window.plugins && window.plugins.nativepagetransitions) {
+                            $timeout(function () {
+                                $scope.closeDrawer();
+                            }, window.plugins.nativepagetransitions.globalOptions.duration);
+                        } else {
+                            $timeout(function () {
+                                $scope.closeDrawer();
+                            }, 500);
+                        }
+                    });
+                }
+            }
+        }])
+        .directive('drawerToggle', [function () {
+            return {
+                restrict: 'A',
+                link: function ($scope, $element, $attr, ctrl) {
+                    $element.bind('click', function () {
+                        $scope.toggleDrawer();
+                    });
+                }
+            }
+        }]);
 })();

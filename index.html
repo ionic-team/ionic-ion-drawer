@@ -4,47 +4,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
     <title>Ionic Seed App</title>
-
-    <!-- ionic css -->
-    <!--<link href="http://code.ionicframework.com/1.0.0-beta.13/css/ionic.css" rel="stylesheet">-->
-    <link href="../ionic/dist/css/ionic.css" rel="stylesheet">
+    <link href="http://code.ionicframework.com/1.0.0-beta.14/css/ionic.css" rel="stylesheet">
     <link rel="stylesheet" href="ionic.contrib.drawer.css">
-
+    <link rel="stylesheet" href="custom.css">
     <!-- angularjs scripts -->
-    <script src="../ionic/dist/js/ionic.bundle.js"></script>
-
+    <script src="http://code.ionicframework.com/1.0.0-beta.14/js/ionic.bundle.js"></script>
     <script src="ionic.contrib.drawer.js"></script>
-    <style>
-      drawer {
-        background-color: #222;
-      }
-      drawer h2 {
-        color: #fff;
-        margin-top: 40px !important;
-        margin-left: 15px;
-        font-weight: 200;
-      }
-      .item {
-        background: none;
-        color: #fff;
-      }
-      .item:first-child {
-        border-top: 0px;
-      }
-      .item:last-child {
-        border-bottom: 0px;
-      }
-    </style>
-  </head>
 
-  <!-- 
-    'starter' is the name of this angular module (js/app.js)
-  -->
+  </head>
   <body ng-app="app">
     <drawer side="left">
       <ion-content>
         <h2>Menu</h2>
-        <button ng-click="closeDrawer()">Close</button>
         <ion-list>
           <ion-item>Friends</ion-item>
           <ion-item>Favorites</ion-item>
@@ -54,7 +25,10 @@
     </drawer>
     <ion-pane>
       <ion-content>
-        <button ng-click="openDrawer()">Open</button>
+        <ion-header-bar class="bar-positive text-right">
+          <button class="drawer-button" ng-show="!drawerIsOpen()" ng-click="openDrawer()" ng-class="{'drawer-open': drawerIsOpen()}">Open</button>
+          <button class="drawer-button" ng-show="drawerIsOpen()" ng-click="closeDrawer()" ng-class="{'drawer-open': drawerIsOpen()}">Close</button>
+        </ion-header-bar>
       </ion-content>
     </ion-pane>
     <script>
