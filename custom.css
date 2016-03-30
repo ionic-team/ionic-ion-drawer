@@ -1,0 +1,27 @@
+drawer, drawer.left, drawer.right {
+  background-color: #222;
+  top: 44px;
+  width:20%;
+}
+.drawer-overlay {
+  top: 44px;
+}
+drawer h2 {
+  color: #fff;
+  margin-top: 40px !important;
+  margin-left: 15px;
+  font-weight: 200;
+}
+
+.item {
+  background: none;
+  color: #fff;
+}
+
+.item:first-child {
+  border-top: 0px;
+}
+
+.item:last-child {
+  border-bottom: 0px;
+}

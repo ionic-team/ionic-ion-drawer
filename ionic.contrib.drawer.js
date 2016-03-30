@@ -379,6 +379,8 @@
                             ctrl.open();
                         }
                     };
+                  
+                  $scope.drawerIsOpen = ctrl.isOpen;
                 }
             }
         }])
