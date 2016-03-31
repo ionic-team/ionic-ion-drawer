@@ -129,7 +129,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         }
       }
     } else {
-      newX = Math.min(0, (-width + (lastX - offsetX)));
+      newX = Math.min(0, ((self.opened ? 0 : -width) + (lastX - offsetX)));
       
       if (Math.abs(startDragX - lastX) > thresholdX) {
         $ionicScrollDelegate.freezeAllScrolls(true);
