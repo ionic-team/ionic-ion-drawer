@@ -3,16 +3,17 @@
 'use strict';
 
 /**
- * The ionic-contrib-frosted-glass is a fun frosted-glass effect
- * that can be used in iOS apps to give an iOS 7 frosted-glass effect
- * to any element.
+ * The ionic-contrib-drawer is fly-out panel that unlike sidemenu appears over the top of content
  */
 angular.module('ionic.contrib.drawer', ['ionic'])
 
-.controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$document', function($element, $attr, $ionicGesture, $document) {
+.controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$ionicScrollDelegate', '$timeout', '$document', function($element, $attr, $ionicGesture, $ionicScrollDelegate, $timeout, $document) {
+
+  var self = this;
+
   var el = $element[0];
   var dragging = false;
-  var startX, lastX, offsetX, newX;
+  var startX, lastX, offsetX, newX, startDragX;
   var side;
 
   // How far to drag before triggering
@@ -27,12 +28,20 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
   var width = $element[0].clientWidth;
 
+  var clientWidth = window.innerWidth;
+
+  self.init = function() {
+    width = $element[0].clientWidth;
+  }
+
   var enableAnimation = function() {
     $element.addClass('animate');
   };
   var disableAnimation = function() {
     $element.removeClass('animate');
   };
+
+  self.opened = false;
 
   // Check if this is on target or not
   var isTarget = function(el) {
@@ -49,18 +58,14 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
     dragging = true;
     offsetX = lastX - startX;
-    console.log('Starting drag');
-    console.log('Offset:', offsetX);
   };
 
   var startTargetDrag = function(e) {
     disableAnimation();
-
+    
     dragging = true;
     isTargetDrag = true;
     offsetX = lastX - startX;
-    console.log('Starting target drag');
-    console.log('Offset:', offsetX);
   };
 
   var doEndDrag = function(e) {
@@ -75,14 +80,19 @@ angular.module('ionic.contrib.drawer', ['ionic'])
 
     dragging = false;
 
-    console.log('End drag');
     enableAnimation();
 
+    var condition = (newX < (- width / 100 * 20))
+
+    if (side == RIGHT) {
+      condition = (newX > (width / 100 * 20))
+    }
+
     ionic.requestAnimationFrame(function() {
-      if(newX < (-width / 2)) {
-        el.style.transform = el.style.webkitTransform = 'translate3d(' + -width + 'px, 0, 0)';
+      if(condition) {
+        self.close()
       } else {
-        el.style.transform = el.style.webkitTransform = 'translate3d(0px, 0, 0)';
+        self.open()
       }
     });
   };
@@ -93,28 +103,45 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     }
 
     if(!lastX) {
+      startDragX = e.gesture.touches[0].pageX;
       startX = e.gesture.touches[0].pageX;
     }
+    
+    var position = el.getBoundingClientRect();
 
     lastX = e.gesture.touches[0].pageX;
 
-    if(!dragging) {
-
+    if (!dragging) {
       // Dragged 15 pixels and finger is by edge
-      if(Math.abs(lastX - startX) > thresholdX) {
-        if(isTarget(e.target)) {
-          startTargetDrag(e);
-        } else if(startX < edgeX) {
-          startDrag(e);
-        } 
+      if (isTarget(e.target)) {
+        startX = position.left;
+        startTargetDrag(e);
+        
+      } else if (Math.abs(lastX - startX) > thresholdX) {
+        if (side == RIGHT) {
+          if (startX > edgeX) {
+            startDrag(e);
+          }
+        } else {
+          if (startX < edgeX) {
+            startDrag(e);
+          }
+        }
       }
     } else {
-      console.log(lastX, offsetX, lastX - offsetX);
-      newX = Math.min(0, (-width + (lastX - offsetX)));
+      newX = Math.min(0, ((self.opened ? 0 : -width) + (lastX - offsetX)));
+      
+      if (Math.abs(startDragX - lastX) > thresholdX) {
+        $ionicScrollDelegate.freezeAllScrolls(true);
+      }
+        
+      if (side == RIGHT) {
+        newX = Math.max(0, width - (clientWidth - (lastX - offsetX)));
+      }
+
       ionic.requestAnimationFrame(function() {
         el.style.transform = el.style.webkitTransform = 'translate3d(' + newX + 'px, 0, 0)';
       });
-
     }
 
     if(dragging) {
@@ -123,17 +150,22 @@ angular.module('ionic.contrib.drawer', ['ionic'])
   };
 
   side = $attr.side == 'left' ? LEFT : RIGHT;
-  console.log(side);
 
+  if (side == RIGHT) {
+    edgeX = clientWidth - edgeX
+  }
   $ionicGesture.on('drag', function(e) {
     doDrag(e);
   }, $document);
   $ionicGesture.on('dragend', function(e) {
+    $ionicScrollDelegate.freezeAllScrolls(false);
     doEndDrag(e);
   }, $document);
 
 
   this.close = function() {
+    self.opened = false;
+
     enableAnimation();
     ionic.requestAnimationFrame(function() {
       if(side === LEFT) {
@@ -142,9 +174,15 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         el.style.transform = el.style.webkitTransform = 'translate3d(100%, 0, 0)';
       }
     });
+
+    $document[0].body.classList.remove('drawer-open');
   };
 
   this.open = function() {
+    self.opened = true;
+
+    $document[0].body.classList.add('drawer-open');
+    
     enableAnimation();
     ionic.requestAnimationFrame(function() {
       if(side === LEFT) {
@@ -153,6 +191,7 @@ angular.module('ionic.contrib.drawer', ['ionic'])
         el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
       }
     });
+    
   };
 }])
 
@@ -162,17 +201,26 @@ angular.module('ionic.contrib.drawer', ['ionic'])
     controller: 'drawerCtrl',
     link: function($scope, $element, $attr, ctrl) {
       $element.addClass($attr.side);
+
+      ctrl.init();
+
+      $scope.toggleDrawer = function() {
+        if (ctrl.opened) {
+          ctrl.close();
+        } else {
+          ctrl.open();
+        }
+      };
+
       $scope.openDrawer = function() {
-        console.log('open');
         ctrl.open();
       };
       $scope.closeDrawer = function() {
-        console.log('close');
         ctrl.close();
       };
     }
   }
-}]);
+}])
 
 .directive('drawerClose', ['$rootScope', function($rootScope) {
   return {
