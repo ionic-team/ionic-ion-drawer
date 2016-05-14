@@ -9,227 +9,227 @@
  */
 angular.module('ionic.contrib.drawer', ['ionic'])
 
-	.controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$ionicBackdrop', '$document', function($element, $attr, $ionicGesture, $ionicBackdrop, $document) {
-		var el = $element[0];
-		var dragging = false;
-		var startX, lastX, offsetX, newX;
-		var side;
+.controller('drawerCtrl', ['$element', '$attrs', '$ionicGesture', '$ionicBackdrop', '$document', function($element, $attr, $ionicGesture, $ionicBackdrop, $document) {
+	var el = $element[0];
+	var dragging = false;
+	var startX, lastX, offsetX, newX;
+	var side;
 
-		// How far to drag before triggering
-		var thresholdX = 15;
-		// How far from edge before triggering
-		var edgeX = 40;
+	// How far to drag before triggering
+	var thresholdX = 15;
+	// How far from edge before triggering
+	var edgeX = 40;
 
-		var LEFT = 0;
-		var RIGHT = 1;
+	var LEFT = 0;
+	var RIGHT = 1;
 
-		var isTargetDrag = false;
+	var isTargetDrag = false;
 
-		var width = $element[0].clientWidth;
+	var width = $element[0].clientWidth;
 
-		var enableAnimation = function() {
-			$element.addClass('animate');
-		};
-		var disableAnimation = function() {
-			$element.removeClass('animate');
-		};
+	var enableAnimation = function() {
+		$element.addClass('animate');
+	};
+	var disableAnimation = function() {
+		$element.removeClass('animate');
+	};
 
-		// Check if this is on target or not
-		var isTarget = function(el) {
-			while(el) {
-				if(el === $element[0]) {
-					return true;
-				}
-				el = el.parentNode;
+	// Check if this is on target or not
+	var isTarget = function(el) {
+		while(el) {
+			if(el === $element[0]) {
+				return true;
 			}
-		};
+			el = el.parentNode;
+		}
+	};
 
-		var startDrag = function(e) {
-			disableAnimation();
+	var startDrag = function(e) {
+		disableAnimation();
 
-			dragging = true;
+		dragging = true;
+		offsetX = lastX - startX;
+	};
+
+	var startTargetDrag = function(e) {
+		disableAnimation();
+
+		dragging = true;
+		isTargetDrag = true;
+		if (side){
+			offsetX = startX - lastX;
+		}else{
 			offsetX = lastX - startX;
-		};
+		}
+	};
 
-		var startTargetDrag = function(e) {
-			disableAnimation();
+	var doEndDrag = function(e) {
+		startX = null;
+		lastX = null;
+		offsetX = null;
+		isTargetDrag = false;
 
-			dragging = true;
-			isTargetDrag = true;
-			if (side){
-				offsetX = startX - lastX;
-			}else{
-				offsetX = lastX - startX;
-			}
-		};
+		if(!dragging) {
+			return;
+		}
 
-		var doEndDrag = function(e) {
-			startX = null;
-			lastX = null;
-			offsetX = null;
-			isTargetDrag = false;
+		dragging = false;
 
-			if(!dragging) {
-				return;
-			}
+		enableAnimation();
 
-			dragging = false;
-
-			enableAnimation();
-
-			ionic.requestAnimationFrame(function() {
-				if(newX < (-width / 2)) {
-					if (side){
-						el.style.transform = el.style.webkitTransform = 'translate3d(' + width + 'px, 0, 0)';
-					}else{
-						el.style.transform = el.style.webkitTransform = 'translate3d(' + -width + 'px, 0, 0)';
-					}
-
-					angular.element(el).trigger('close-main-menu');
-				} else {
-					el.style.transform = el.style.webkitTransform = 'translate3d(0px, 0, 0)';
-					angular.element(el).trigger('open-main-menu');
-				}
-			});
-		};
-
-		var docWidth = angular.element('body').outerWidth();
-
-		var doDrag = function(e) {
-			if(e.defaultPrevented) {
-				return;
-			}
-
-			if(!lastX) {
+		ionic.requestAnimationFrame(function() {
+			if(newX < (-width / 2)) {
 				if (side){
-					startX = docWidth - e.gesture.touches[0].pageX;
+					el.style.transform = el.style.webkitTransform = 'translate3d(' + width + 'px, 0, 0)';
 				}else{
-					startX = e.gesture.touches[0].pageX;
+					el.style.transform = el.style.webkitTransform = 'translate3d(' + -width + 'px, 0, 0)';
 				}
-			}
 
-			if (side){
-				lastX = docWidth - e.gesture.touches[0].pageX;
-			}else {
-				lastX = e.gesture.touches[0].pageX;
-			}
-
-			if(!dragging) {
-				if (side){
-					if(Math.abs(startX - lastX) > thresholdX) {
-						if(isTarget(e.target)) {
-							startTargetDrag(e);
-						} else if(startX < edgeX) {
-							startDrag(e);
-						}
-					}
-				}else{
-					// Dragged 15 pixels and finger is by edge
-					if(Math.abs(lastX - startX) > thresholdX) {
-						if(isTarget(e.target)) {
-							startTargetDrag(e);
-						} else if(startX < edgeX) {
-							startDrag(e);
-						}
-					}
-				}
+				angular.element(el).trigger('close-main-menu');
 			} else {
-				newX = Math.min(0, (-width + (lastX - offsetX)));
-				ionic.requestAnimationFrame(function() {
-					if (side){
-						el.style.transform = el.style.webkitTransform = 'translate3d(' + (-newX) + 'px, 0, 0)';
-					}else{
-						el.style.transform = el.style.webkitTransform = 'translate3d(' + newX + 'px, 0, 0)';
+				el.style.transform = el.style.webkitTransform = 'translate3d(0px, 0, 0)';
+				angular.element(el).trigger('open-main-menu');
+			}
+		});
+	};
+
+	var docWidth = angular.element('body').outerWidth();
+
+	var doDrag = function(e) {
+		if(e.defaultPrevented) {
+			return;
+		}
+
+		if(!lastX) {
+			if (side){
+				startX = docWidth - e.gesture.touches[0].pageX;
+			}else{
+				startX = e.gesture.touches[0].pageX;
+			}
+		}
+
+		if (side){
+			lastX = docWidth - e.gesture.touches[0].pageX;
+		}else {
+			lastX = e.gesture.touches[0].pageX;
+		}
+
+		if(!dragging) {
+			if (side){
+				if(Math.abs(startX - lastX) > thresholdX) {
+					if(isTarget(e.target)) {
+						startTargetDrag(e);
+					} else if(startX < edgeX) {
+						startDrag(e);
 					}
-				});
+				}
+			}else{
+				// Dragged 15 pixels and finger is by edge
+				if(Math.abs(lastX - startX) > thresholdX) {
+					if(isTarget(e.target)) {
+						startTargetDrag(e);
+					} else if(startX < edgeX) {
+						startDrag(e);
+					}
+				}
 			}
-			if(dragging) {
-				e.gesture.srcEvent.preventDefault();
-			}
-		};
-
-		side = $attr.side == 'left' ? LEFT : RIGHT;
-
-		$ionicGesture.on('drag', function(e) {
-			doDrag(e);
-		}, $document);
-		$ionicGesture.on('dragend', function(e) {
-			doEndDrag(e);
-		}, $document);
-
-		angular.element(el).on('close-main-menu',function(){
-			$ionicBackdrop.release();
-			angular.element(el).addClass('menu-closed');
-			angular.element(document).off('click');
-		});
-
-		angular.element(el).on('open-main-menu',function(){
-			angular.element(el).addClass('menu-open');
-			$ionicBackdrop.retain();
-			setTimeout(function(){
-				angular.element(document).on('click',function(e){
-					close_menu();
-				});
-			},0);
-		});
-
-		this.close = close_menu;
-
-		function close_menu(){
-			$ionicBackdrop.release();
-			enableAnimation();
-			angular.element(document).off('click');
+		} else {
+			newX = Math.min(0, (-width + (lastX - offsetX)));
 			ionic.requestAnimationFrame(function() {
-				if(side === LEFT) {
-					el.style.transform = el.style.webkitTransform = 'translate3d(-100%, 0, 0)';
-				} else {
-					el.style.transform = el.style.webkitTransform = 'translate3d(100%, 0, 0)';
+				if (side){
+					el.style.transform = el.style.webkitTransform = 'translate3d(' + (-newX) + 'px, 0, 0)';
+				}else{
+					el.style.transform = el.style.webkitTransform = 'translate3d(' + newX + 'px, 0, 0)';
 				}
 			});
 		}
+		if(dragging) {
+			e.gesture.srcEvent.preventDefault();
+		}
+	};
 
-		this.open = function() {
-			enableAnimation();
-			angular.element(el).trigger('open-main-menu');
-			ionic.requestAnimationFrame(function() {
-				if(side === LEFT) {
-					el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
-				} else {
-					el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
-				}
+	side = $attr.side == 'left' ? LEFT : RIGHT;
+
+	$ionicGesture.on('drag', function(e) {
+		doDrag(e);
+	}, $document);
+	$ionicGesture.on('dragend', function(e) {
+		doEndDrag(e);
+	}, $document);
+
+	angular.element(el).on('close-main-menu',function(){
+		$ionicBackdrop.release();
+		angular.element(el).addClass('menu-closed');
+		angular.element(document).off('click');
+	});
+
+	angular.element(el).on('open-main-menu',function(){
+		angular.element(el).addClass('menu-open');
+		$ionicBackdrop.retain();
+		setTimeout(function(){
+			angular.element(document).on('click',function(e){
+				close_menu();
 			});
-		};
-	}])
+		},0);
+	});
 
-	.directive('drawer', ['$rootScope', '$ionicGesture', function($rootScope, $ionicGesture) {
-		return {
-			restrict: 'E',
-			controller: 'drawerCtrl',
-			link: function($scope, $element, $attr, ctrl) {
+	this.close = close_menu;
 
-				$element.addClass($attr.side);
-				$scope.openDrawer = function() {
-					//console.log('open');
-					ctrl.open();
-				};
-				$scope.closeDrawer = function() {
-					//console.log('close');
-					ctrl.close();
-				};
+	function close_menu(){
+		$ionicBackdrop.release();
+		enableAnimation();
+		angular.element(document).off('click');
+		ionic.requestAnimationFrame(function() {
+			if(side === LEFT) {
+				el.style.transform = el.style.webkitTransform = 'translate3d(-100%, 0, 0)';
+			} else {
+				el.style.transform = el.style.webkitTransform = 'translate3d(100%, 0, 0)';
 			}
-		}
-	}])
+		});
+	}
 
-	.directive('drawerClose', ['$rootScope', function($rootScope) {
-		return {
-			restrict: 'A',
-			link: function($scope, $element) {
-				$element.bind('click', function() {
-					var drawerCtrl = $element.inheritedData('$drawerController');
-					drawerCtrl.close();
-				});
+	this.open = function() {
+		enableAnimation();
+		angular.element(el).trigger('open-main-menu');
+		ionic.requestAnimationFrame(function() {
+			if(side === LEFT) {
+				el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
+			} else {
+				el.style.transform = el.style.webkitTransform = 'translate3d(0%, 0, 0)';
 			}
+		});
+	};
+}])
+
+.directive('drawer', ['$rootScope', '$ionicGesture', function($rootScope, $ionicGesture) {
+	return {
+		restrict: 'E',
+		controller: 'drawerCtrl',
+		link: function($scope, $element, $attr, ctrl) {
+
+			$element.addClass($attr.side);
+			$scope.openDrawer = function() {
+				//console.log('open');
+				ctrl.open();
+			};
+			$scope.closeDrawer = function() {
+				//console.log('close');
+				ctrl.close();
+			};
 		}
-	}]);
+	}
+}])
+
+.directive('drawerClose', ['$rootScope', function($rootScope) {
+	return {
+		restrict: 'A',
+		link: function($scope, $element) {
+			$element.bind('click', function() {
+				var drawerCtrl = $element.inheritedData('$drawerController');
+				drawerCtrl.close();
+			});
+		}
+	}
+}]);
 
 })();
